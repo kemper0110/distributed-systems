@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "nanoid": "^5.0.9",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.51.0"
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.51.0",
+    "zod": "3.24.1"
   }
 }

@@ -1,18 +1,16 @@
-export type JacobiTask = {
-    A: number[][],
-    b: number[],
+export type JacobiSubTask = {
+    aRow: number[]
+    b: number[]
+    X: number[]
+    rowIndex: number
 }
 
-export function jacobiIteration(
-    task: JacobiTask,
-    X: number[],
-    rowIndex: number
-): number {
-    const {A, b} = task;
-    const N = A.length;
+export function jacobiIteration(task: JacobiSubTask): number {
+    const {aRow, b, X, rowIndex} = task;
+    const N = aRow.length;
     let sum = 0;
     for (let j = 0; j < N; j++)
         if (j !== rowIndex)
-            sum += A[rowIndex][j] * X[j];
-    return (b[rowIndex] - sum) / A[rowIndex][rowIndex];
+            sum += aRow[j] * X[j];
+    return (b[rowIndex] - sum) / aRow[rowIndex];
 }
