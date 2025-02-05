@@ -1,0 +1,27 @@
+{
+  "name": "lab1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "workspaces": [
+    "master",
+    "worker"
+  ],
+  "scripts": {
+    "dev:master": "tsx watch --env-file=master.env master/index.ts",
+    "dev:worker": "tsx watch --env-file=worker1.env worker/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.9",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.51.0"
+  }
+}
