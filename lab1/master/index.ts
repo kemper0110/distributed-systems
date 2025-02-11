@@ -1,40 +1,54 @@
-import {App} from 'uWebSockets.js';
-import {taskSchema} from "./task";
+import {taskSchema} from "../common/task";
+import fastify from "fastify";
+import {WorkerPool} from "./WorkerPool";
 
 const PORT = Number.parseInt(process.env.PORT) || 3000;
 
-const app = App()
-    .post('/solve', async (res, req) => {
-        let aborted = false;
-        res.onAborted(() => {
-            console.log('Request aborted');
-            aborted = true;
-        })
+const app = fastify({logger: true})
 
-        const blob = await new Promise<Buffer>((resolve) => {
-            const chunks: Buffer[] = [];
-            res.onData((data, isLast) => {
-                chunks.push(Buffer.from(data));
-                if (isLast) resolve(Buffer.concat(chunks));
-            })
-        })
-        if (aborted) return;
-        const data = JSON.parse(blob.toString());
+const workerPool = new WorkerPool([
+    {origin: 'http://localhost:3001'},
+])
 
-        const task = taskSchema.safeParse(data);
-        if(!task.success) {
-            res.writeStatus("400 Bad Request").end(JSON.stringify(task.error.issues));
-            return;
+app
+    .post('/solve', async (request, reply) => {
+        const result = taskSchema.safeParse(request.body);
+        if(!result.success)
+            return reply.status(400).send(result.error.message);
+        const input = result.data;
+
+        let iteration = 0;
+        let precision = Infinity;
+        const x = input.x ?? (
+            Array.from({length: input.b.length}, () => 0) as [number, ...number[]]
+        );
+
+        while(iteration < input.maxIterations && (
+            input.epsilon ? precision > input.epsilon : true
+        )) {
+
+            for(let rowIdx = 0; rowIdx < input.a.length; ++rowIdx) {
+                const promise = workerPool.dispatch({
+                    aRow: input.a[rowIdx],
+                    rowIndex: rowIdx,
+                    b: input.b,
+                    x: x
+                })
+                promise.then(res => {
+
+                }).catch(err => {
+
+                })
+            }
+
+            iteration++;
         }
 
-
-
-        res.end();
     })
-    .listen(PORT, (token) => {
-        if (token) {
-            console.log(`Сервер запущен на http://localhost:${PORT}`);
-        } else {
-            console.log('Не удалось запустить сервер');
+    .listen({port: PORT}, (err, address) => {
+        if (err) {
+            console.error(err);
+            process.exit(1);
         }
+        console.log(`Сервер запущен на ${address}`);
     });

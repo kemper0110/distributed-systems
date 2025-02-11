@@ -21,8 +21,8 @@
     "tsx": "^4.19.2"
   },
   "dependencies": {
+    "fastify": "5.2.1",
     "nanoid": "^5.0.9",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.51.0",
     "zod": "3.24.1"
   }
 }

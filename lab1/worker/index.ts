@@ -1,15 +1,17 @@
-import {App} from 'uWebSockets.js';
+import fastify from "fastify";
+
+const app = fastify({logger: true})
 
 const PORT = Number.parseInt(process.env.PORT) || 4000;
 
-const app = App()
-    .post('/solve', (res, req) => {
-        res.end();
+app
+    .post('/solve', async (request, reply) => {
+
     })
-    .listen(PORT, (token) => {
-        if (token) {
-            console.log(`Сервер запущен на http://localhost:${PORT}`);
-        } else {
-            console.log('Не удалось запустить сервер');
+    .listen({port: PORT}, (err, address) => {
+        if (err) {
+            console.error(err);
+            process.exit(1);
         }
+        console.log(`Сервер запущен на ${address}`);
     });
