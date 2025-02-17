@@ -1,0 +1,38 @@
+###
+POST localhost:4001/solve
+Content-Type: application/json
+Accept: application/json
+
+{
+  "a": [
+    [4, -1, 1],
+    [-2, 6, 1],
+    [1, 1, 5]
+  ],
+  "b": [7, 9, -6],
+  "x": [0, 0, 0],
+  "epsilon": 0.01,
+  "maxIterations": 6,
+  "minRowsPerWorker": 2
+}
+
+###
+POST localhost:4001/solve
+Content-Type: application/json
+Accept: application/json
+
+{
+  "epsilon": 0.01,
+  "maxIterations": 50,
+  "minRowsPerWorker": 5,
+  "a": [
+    [125, -3, -1, -9, -9],
+    [10, -628, -4, 10, 8],
+    [13, 4, -323, -1, 7],
+    [5, -8, -8, 555, 4],
+    [-4, -8, 4, 6, -333]
+  ],
+  "b": [2,5,0,8,-10],
+  "x": [0,0,0,0,0]
+}
+### [0.9, 3.7, -4, 5,-5]

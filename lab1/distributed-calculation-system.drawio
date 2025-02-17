@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 YaBrowser/24.12.0.0 Safari/537.36" version="26.0.11">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 YaBrowser/25.2.0.0 Safari/537.36" version="26.0.12">
   <diagram name="Страница — 1" id="SWsrPS1IRnshcA_87efg">
-    <mxGraphModel dx="819" dy="1612" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1185" dy="1603" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -259,9 +259,6 @@
             <mxPoint x="440" y="1005" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="VRk2OwmalRbTudh66nst-81" value="Master" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
-          <mxGeometry x="1250" y="2030" width="120" height="60" as="geometry" />
-        </mxCell>
         <mxCell id="VRk2OwmalRbTudh66nst-84" value="loop" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;" parent="1" vertex="1">
           <mxGeometry x="610" y="690" width="370" height="260" as="geometry" />
         </mxCell>
@@ -517,20 +514,89 @@
         <mxCell id="VRk2OwmalRbTudh66nst-177" value="Помечаем worker свободным" style="whiteSpace=wrap;html=1;rounded=1;strokeWidth=2;" parent="VRk2OwmalRbTudh66nst-136" vertex="1">
           <mxGeometry x="275.25" y="637.5" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="RtZBo8e-8X951KS53bFT-1" value="поискать распределение якоби по узлам&lt;br&gt;распараллеливание методом якоби&lt;br&gt;или другой метод" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+        <mxCell id="RtZBo8e-8X951KS53bFT-1" value="поискать распределение якоби по узлам&lt;br&gt;распараллеливание методом якоби&lt;br&gt;или другой метод" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="1304" y="-140" width="206" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="RtZBo8e-8X951KS53bFT-2" value="якоби на MPI" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="RtZBo8e-8X951KS53bFT-2" value="якоби на MPI" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="220" y="750" width="150" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="RtZBo8e-8X951KS53bFT-3" value="Разделить настоящего воркера и его представление" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="RtZBo8e-8X951KS53bFT-3" value="Разделить настоящего воркера и его представление" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2340" y="555" width="120" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="RtZBo8e-8X951KS53bFT-17" value="Отказ в выполнении - непонятно. Вайб Отказа как в безопасности." style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="RtZBo8e-8X951KS53bFT-17" value="Отказ в выполнении - непонятно. Вайб Отказа как в безопасности." style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2550" y="555" width="120" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="RtZBo8e-8X951KS53bFT-18" value="Точнее расписать событие. Отказ времени, отказ выполнения.&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="RtZBo8e-8X951KS53bFT-18" value="Точнее расписать событие. Отказ времени, отказ выполнения.&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2331" y="440" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-1" value="Обновляем соответствующие значения вектора X" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="2930" y="1285" width="189" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="v7jFoKSED7FrSs_yAmbp-2" target="v7jFoKSED7FrSs_yAmbp-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-7" value="Узел доступен" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="v7jFoKSED7FrSs_yAmbp-4">
+          <mxGeometry x="-0.0921" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="v7jFoKSED7FrSs_yAmbp-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2519.9999999999995" y="1332.5238095238096" as="sourcePoint" />
+            <mxPoint x="2642" y="1487.5" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="2551" y="1333" />
+              <mxPoint x="2551" y="1488" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-8" value="Узел недоступен" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="v7jFoKSED7FrSs_yAmbp-6">
+          <mxGeometry x="0.5087" y="2" relative="1" as="geometry">
+            <mxPoint x="13" y="-6" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-2" value="&lt;div&gt;Ищем свободный узел. Указываем его занятым.&amp;nbsp;&lt;/div&gt;Отправляем запрос на вычисление." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="2340" y="1285" width="189" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="v7jFoKSED7FrSs_yAmbp-3" target="v7jFoKSED7FrSs_yAmbp-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-3" value="Указываем узел свободным." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="2660" y="1285" width="189" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-5" value="Отправить еще раз" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="2660" y="1440" width="189" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="v7jFoKSED7FrSs_yAmbp-5" target="v7jFoKSED7FrSs_yAmbp-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2680" y="1420.5" as="sourcePoint" />
+            <mxPoint x="2811" y="1420.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-11" value="Узел доступен" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="v7jFoKSED7FrSs_yAmbp-10">
+          <mxGeometry x="-0.0921" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="v7jFoKSED7FrSs_yAmbp-5" target="v7jFoKSED7FrSs_yAmbp-14">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2684.4999999999995" y="1480.0038095238097" as="sourcePoint" />
+            <mxPoint x="2755" y="1600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-13" value="Узел недоступен" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="v7jFoKSED7FrSs_yAmbp-12">
+          <mxGeometry x="0.5087" y="2" relative="1" as="geometry">
+            <mxPoint x="-3" y="-24" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="v7jFoKSED7FrSs_yAmbp-14" target="v7jFoKSED7FrSs_yAmbp-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-14" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Ищем свободный узел. Если не найден, то проверяем наличие работающих и ждем обновлений.&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="2660" y="1590" width="189" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="v7jFoKSED7FrSs_yAmbp-15" value="Рабочие узлы кончились. Возвращаем частичный результат.&amp;nbsp;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="2910" y="1590" width="189" height="95" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

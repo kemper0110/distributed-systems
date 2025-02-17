@@ -1,0 +1,19 @@
+version: '3'
+services:
+  worker:
+    scale: 10
+    image: node:23-alpine
+    working_dir: /usr/app
+    labels:
+      lab1-container: worker
+    ports:
+      - "3000"
+    volumes:
+      - type: bind
+        source: .
+        target: /usr/app
+        read_only: true
+    command: ['npm', 'run', 'start:worker']
+    environment:
+      NODE_ENV: production
+      PORT: 3000

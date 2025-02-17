@@ -1,0 +1,15 @@
+POST localhost:59288/solve
+Content-Type: application/json
+Accept: application/json
+
+{
+  "aSlice": [
+    [4, -1, 1],
+    [-2, 6, 1],
+    [1, 1, 5]
+  ],
+  "b": [7, 9, -6],
+  "x": [0, 0, 0],
+  "startRow": 0,
+  "rowCount": 3
+}

@@ -9,20 +9,25 @@
   ],
   "scripts": {
     "dev:master": "tsx watch --env-file=master.env master/index.ts",
-    "dev:worker": "tsx watch --env-file=worker1.env worker/index.ts"
+    "dev:worker": "tsx watch --env-file=worker.env worker/index.ts",
+    "dev:fm": "tsx watch fm.ts",
+    "test": "vitest",
+    "start:worker": "tsx worker/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/node": "^22.13.1",
+    "@types/node": "22.13.1",
     "concurrently": "^9.1.2",
-    "tsx": "^4.19.2"
+    "tsx": "^4.19.2",
+    "vitest": "3.0.5"
   },
   "dependencies": {
     "fastify": "5.2.1",
     "nanoid": "^5.0.9",
     "zod": "3.24.1"
-  }
+  },
+  "packageManager": "yarn@4.6.0"
 }
