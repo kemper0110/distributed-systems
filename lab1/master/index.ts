@@ -3,6 +3,8 @@ import fastify from "fastify";
 import {NoValidWorkersError, WorkerConfig, WorkerPool} from "./WorkerPool";
 import {SubTask} from "../common/subTask";
 import {calculatePrecision} from "./precision";
+import * as fs from "node:fs";
+import {getDiagonalNotPrevalenceRow} from "../common/diagonal-prevalence";
 
 const PORT = Number.parseInt(process.env.PORT) || 3000;
 
@@ -11,11 +13,12 @@ const app = fastify({logger: true})
 
 async function introspectFromDocker(): Promise<WorkerConfig[]> {
     try {
-        const res = await fetch(new URL("/containers/json?" + new URLSearchParams({
+        const url = new URL("/containers/json?" + new URLSearchParams({
             filters: JSON.stringify({
                 label: ["lab1-container=worker"]
             })
-        }), process.env.DOCKER_DAEMON));
+        }), process.env.DOCKER_DAEMON)
+        const res = await fetch(url);
         const containers = await res.json();
         return containers.map(c => ({origin: "http://localhost:" + c.Ports[0].PublicPort}));
     } catch (e) {

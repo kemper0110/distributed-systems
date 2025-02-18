@@ -1,4 +1,5 @@
 import {z} from "zod";
+import {getDiagonalNotPrevalenceRow} from "./diagonal-prevalence";
 
 export const taskSchema = z.object({
         a: z.array(z.array(z.number()).nonempty()).nonempty(),
@@ -22,7 +23,13 @@ export const taskSchema = z.object({
     }).refine(data => data.x.length === data.b.length, {
         message: "Длина вектора x должна быть равной длине вектора b",
         path: ['x']
-    })
+    }).refine(data => {
+        const rowId = getDiagonalNotPrevalenceRow(data.a)
+        return rowId === -1;
+    }, data => ({
+        message: `Матрица не имеет диагонального преобладания в строке ${getDiagonalNotPrevalenceRow(data.a)}`,
+        path: ['x']
+    }))
 ;
 
 export type Task = z.infer<typeof taskSchema>;

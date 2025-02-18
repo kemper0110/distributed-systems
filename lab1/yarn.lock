@@ -433,15 +433,15 @@ __metadata:
 
 "@lab1/common@file:../common::locator=%40lab1%2Fmaster%40workspace%3Amaster":
   version: 1.0.0
-  resolution: "@lab1/common@file:../common#../common::hash=941669&locator=%40lab1%2Fmaster%40workspace%3Amaster"
-  checksum: 10c0/11288e1d586ed7c37a65b58e5a5f15e155450b82950d311c9b0ddbd150bb9ef3eb901eafce84e7ddf849c9999e625bef1bb8aa8f5e390aadc16e40e77b172cad
+  resolution: "@lab1/common@file:../common#../common::hash=3d461c&locator=%40lab1%2Fmaster%40workspace%3Amaster"
+  checksum: 10c0/f92b7c0c7cdfb65fce7f51bdd8dc54b73d94b4ccbf5294b696ad7d49969c3603d38a54e2b41a1da1c9e58d4b716b7c90297d46def0e04f9a54b1da3db1f23fa0
   languageName: node
   linkType: hard
 
 "@lab1/common@file:../common::locator=%40lab1%2Fworker%40workspace%3Aworker":
   version: 1.0.0
-  resolution: "@lab1/common@file:../common#../common::hash=941669&locator=%40lab1%2Fworker%40workspace%3Aworker"
-  checksum: 10c0/11288e1d586ed7c37a65b58e5a5f15e155450b82950d311c9b0ddbd150bb9ef3eb901eafce84e7ddf849c9999e625bef1bb8aa8f5e390aadc16e40e77b172cad
+  resolution: "@lab1/common@file:../common#../common::hash=3d461c&locator=%40lab1%2Fworker%40workspace%3Aworker"
+  checksum: 10c0/f92b7c0c7cdfb65fce7f51bdd8dc54b73d94b4ccbf5294b696ad7d49969c3603d38a54e2b41a1da1c9e58d4b716b7c90297d46def0e04f9a54b1da3db1f23fa0
   languageName: node
   linkType: hard
 
