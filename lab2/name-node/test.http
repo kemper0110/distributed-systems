@@ -1,0 +1,13 @@
+###
+HEAD http://localhost:4000/file//cringe/aboba.ts
+
+###
+POST http://localhost:4000/block
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="file.blob"
+Content-Type: video/mp4
+
+< ../costa-rica.mp4
+--WebAppBoundary--

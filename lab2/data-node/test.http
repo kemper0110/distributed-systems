@@ -1,0 +1,19 @@
+###
+@PORT = 58447
+
+###
+POST http://localhost:{{PORT}}/block/10.mp4
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="file.blob"
+Content-Type: video/mp4
+
+< ../costa-rica.mp4
+--WebAppBoundary--
+
+###
+GET http://localhost:{{PORT}}/block/10.mp4
+
+
+
