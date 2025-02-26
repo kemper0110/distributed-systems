@@ -1,5 +1,5 @@
 ###
-@PORT = 58447
+@PORT = 3000
 
 ###
 POST http://localhost:{{PORT}}/block/10.mp4
@@ -13,7 +13,13 @@ Content-Type: video/mp4
 --WebAppBoundary--
 
 ###
-GET http://localhost:{{PORT}}/block/10.mp4
+GET http://localhost:{{PORT}}/block/12.mp4
 
 
 
+###
+POST http://localhost:{{PORT}}/block/12.mp4
+Content-Type: video/mp4
+Transfer-Encoding: chunked
+
+< ../costa-rica.mp4

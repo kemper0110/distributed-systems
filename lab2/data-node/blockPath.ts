@@ -5,7 +5,7 @@ import {fileURLToPath} from "node:url";
 // @ts-ignore
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const blocksPath = process.env.BLOCKS_PATH || '../blocks'
+const blocksPath = process.env.BLOCKS_PATH || './blocks'
 
 const blocksDir = path.resolve(__dirname, blocksPath)
 

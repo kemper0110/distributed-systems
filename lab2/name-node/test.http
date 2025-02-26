@@ -11,3 +11,16 @@ Content-Type: video/mp4
 
 < ../costa-rica.mp4
 --WebAppBoundary--
+
+
+###
+@FILENAME = 21
+###
+POST http://localhost:4000/block/{{FILENAME}}.mp4
+Content-Type: video/mp4
+Transfer-Encoding: chunked
+
+< ../costa-rica.mp4
+
+###
+GET http://localhost:4000/block/{{FILENAME}}.mp4

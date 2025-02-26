@@ -32,6 +32,12 @@ https://http.dev/range
 
 node js
 https://nodejs.org/en/learn/modules/how-to-use-streams#stream-types
+https://nodejs.org/en/learn/modules/anatomy-of-an-http-transaction
+https://dev.to/bsorrentino/how-to-stream-data-over-http-using-node-and-fetch-api-4ij2
+https://betterstack.com/community/guides/scaling-nodejs/nodejs-streams-vs-web-streams-api/#transitioning-from-node-js-streams-to-web-streams
+
+web streams
+https://developer.mozilla.org/en-US/docs/Web/API/Streams_API
 
 docker
 https://docs.docker.com/reference/api/engine/version/v1.48/#tag/System/operation/SystemEvents

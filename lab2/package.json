@@ -6,8 +6,8 @@
   "scripts": {
     "dev:name-node": "tsx watch --experimental-sqlite name-node/index.ts",
     "dev:name-node-proxy": "tsx watch --experimental-sqlite name-node/proxy.ts",
-    "dev:data-node": "tsx watch data-node/src/index.ts",
-    "start:data-node": "tsx data-node/src/index.ts"
+    "dev:data-node": "tsx watch data-node/index.ts",
+    "start:data-node": "tsx data-node/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +32,7 @@
     "@types/node": "22.13.1",
     "@types/range-parser": "^1.2.7",
     "tsx": "^4.19.2",
+    "typescript": "5.7.3",
     "vitest": "3.0.5"
   }
 }
