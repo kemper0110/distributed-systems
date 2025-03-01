@@ -42,6 +42,17 @@ async function main() {
                     await pipeline(fs.createReadStream(filePath), response)
                     return response.end()
                 }
+                case "DELETE": {
+                    const stats = await fsp.stat(filePath).catch<Error>(e => e);
+                    if (stats instanceof Error) {
+                        return response.writeHead(404).end();
+                    }
+                    const result = await fsp.rm(filePath).catch<Error>(e => e)
+                    if (result instanceof Error) {
+                        return response.writeHead(500).end(result.message)
+                    }
+                    return response.writeHead(200).end()
+                }
             }
         } catch (e) {
             response.writeHead(500).end(e.message)

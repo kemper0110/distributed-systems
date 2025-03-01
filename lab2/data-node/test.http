@@ -2,24 +2,14 @@
 @PORT = 3000
 
 ###
-POST http://localhost:{{PORT}}/block/10.mp4
-Content-Type: multipart/form-data; boundary=WebAppBoundary
-
---WebAppBoundary
-Content-Disposition: form-data; name="file"; filename="file.blob"
-Content-Type: video/mp4
-
-< ../costa-rica.mp4
---WebAppBoundary--
-
-###
-GET http://localhost:{{PORT}}/block/12.mp4
-
-
-
-###
 POST http://localhost:{{PORT}}/block/12.mp4
 Content-Type: video/mp4
 Transfer-Encoding: chunked
 
 < ../costa-rica.mp4
+
+###
+GET http://localhost:{{PORT}}/block/12.mp4
+
+###
+DELETE http://localhost:{{PORT}}/block/12.mp4
