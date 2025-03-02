@@ -1,38 +1,53 @@
-import Fastify from 'fastify';
-import {fastifyMultipart} from '@fastify/multipart'
-import {getFile} from "./getFile";
-import {postFile} from "./postFile";
 import {DataNodes} from "./data-nodes";
+import http from "node:http";
+import {Readable} from "node:stream";
+import {pipeline} from "node:stream/promises";
+import { postFile2 } from "./postFile";
+import {getFile2} from "./getFile";
 
-const PORT = Number.parseInt(process.env.PORT) || 4000
+const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 4000
 
 async function main() {
-    const datanodes = new DataNodes()
+    const datanodes = new DataNodes([
+        // {
+        //     origin: "http://localhost:3000",
+        //     name: "node1"
+        // }
+    ])
     await datanodes.forceUpdate()
-    datanodes.listen().catch(e => {
-        console.error("Ошибка при отслеживании событий Docker", e)
-    })
+    // datanodes.listen().catch(e => console.error("docker listen err", e))
+    const dataNode = datanodes.get()[0]
+    const origin = dataNode.origin
+    console.log('selected datanode:', dataNode)
 
-    const fastify = Fastify({
-        logger: true
-    });
-    fastify.register(fastifyMultipart, {
-        limits: {
-            fieldNameSize: 100, // Max field name size in bytes
-            fieldSize: 100,     // Max field value size in bytes
-            fields: 10,         // Max number of non-file fields
-            fileSize: 1024 * 1024 * 1024,  // For multipart forms, the max file size in bytes
-            files: 1,           // Max number of file fields
-            headerPairs: 200,  // Max number of header key=>value pairs
-            parts: 10         // For multipart forms, the max number of parts (fields + files)
+    http.createServer(async (request, response) => {
+        const url = new URL(request.url!, `http://0.0.0.0:${PORT}`)
+        const query = Object.fromEntries(url.searchParams.entries())
+        const match = url.pathname.match(new RegExp("/file/(.*)"))
+        if (match === null)
+            return response.writeHead(404).end();
+
+        const filePath = match[1]
+        if (!filePath)
+            return response.writeHead(404).end();
+
+        try {
+            switch (request.method) {
+                case "GET": {
+                    await getFile2(request, response, filePath, query, datanodes)
+                    return
+                }
+                case "POST": {
+                    await postFile2(request, response, filePath, query, datanodes)
+                    return
+                }
+            }
+        } catch (e) {
+            return response.writeHead(500).end()
         }
+    }).listen(PORT, () => {
+        console.log(`server listening on port ${PORT}`)
     })
-    getFile(fastify, datanodes)
-    postFile(fastify, datanodes)
-
-    fastify.listen({port: PORT, host: '0.0.0.0'}, () => {
-        console.log(`Server running on http://localhost:${PORT}/`);
-    });
 }
 
 main().catch(e => {

@@ -7,7 +7,8 @@
     "dev:name-node": "tsx watch --experimental-sqlite name-node/index.ts",
     "dev:name-node-proxy": "tsx watch --experimental-sqlite name-node/proxy.ts",
     "dev:data-node": "tsx watch data-node/index.ts",
-    "start:data-node": "tsx data-node/index.ts"
+    "start:data-node": "tsx data-node/index.ts",
+    "test:db": "tsx name-node/db-test.ts"
   },
   "keywords": [],
   "author": "",

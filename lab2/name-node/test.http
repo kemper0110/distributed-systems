@@ -1,26 +1,15 @@
 ###
-HEAD http://localhost:4000/file//cringe/aboba.ts
+HEAD http://localhost:4000/file//cringe/aboba.ts?blockSize=1024
 
 ###
-POST http://localhost:4000/block
-Content-Type: multipart/form-data; boundary=WebAppBoundary
-
---WebAppBoundary
-Content-Disposition: form-data; name="file"; filename="file.blob"
-Content-Type: video/mp4
-
-< ../costa-rica.mp4
---WebAppBoundary--
-
-
+@FILENAME = 25
 ###
-@FILENAME = 21
-###
-POST http://localhost:4000/block/{{FILENAME}}.mp4
+POST http://localhost:4000/file/{{FILENAME}}.mp4?blockSize=1&nodeCount=1
 Content-Type: video/mp4
 Transfer-Encoding: chunked
 
-< ../costa-rica.mp4
+< ../stream.mp4
 
 ###
-GET http://localhost:4000/block/{{FILENAME}}.mp4
+GET http://localhost:4000/file/{{FILENAME}}.mp4
+

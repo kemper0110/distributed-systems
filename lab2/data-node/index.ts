@@ -4,7 +4,7 @@ import * as fsp from "fs/promises";
 import {pipeline} from "node:stream/promises";
 import {resolveBlockPath} from "./blockPath";
 
-const PORT = Number.parseInt(process.env.PORT || '') || 3000
+const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 4000
 
 
 async function main() {
@@ -28,6 +28,17 @@ async function main() {
                 case "POST": {
                     response.writeHead(200)
                     await pipeline(request, fs.createWriteStream(filePath))
+                    return response.end()
+                }
+                case "HEAD": {
+                    const stats = await fsp.stat(filePath).catch<Error>(e => e);
+                    if (stats instanceof Error) {
+                        return response.writeHead(404).end();
+                    }
+                    response.writeHead(200, {
+                        'Content-Type': 'application/octet-stream',
+                        'Content-Length': stats.size,
+                    })
                     return response.end()
                 }
                 case "GET": {
