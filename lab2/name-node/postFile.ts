@@ -1,24 +1,21 @@
 import {z} from "zod";
 import {pipeline} from "node:stream/promises";
-import {Readable, Writable} from "node:stream";
-import * as fs from 'fs';
-import * as path from 'path';
 import {db} from "./db";
-import {DataNode, DataNodes} from "./data-nodes";
+import {DataNodes} from "./data-nodes";
 import http, {IncomingMessage, ServerResponse} from "node:http";
 import {toBlockId} from "./common";
 
 export const postFileQueryParams = z.object({
     blockSize: z.coerce.number().int().min(1).max(128),
     nodeCount: z.coerce.number().int().min(1).optional(),
-    replicationFactor: z.coerce.number().int().min(1).optional().default(1),
+    // replicationFactor: z.coerce.number().int().min(1).optional().default(1),
 })
 
-export async function postFile2(request: IncomingMessage, response: ServerResponse,
-                                filePath: string,
-                                query: Record<string, string>,
-                                datanodes: DataNodes
-) {
+export async function postFile(requestId: number, request: IncomingMessage,
+                               response: ServerResponse,
+                               filePath: string,
+                               query: Record<string, string>
+    , datanodes: DataNodes) {
     const dataNodesSnapshot = datanodes.get()
     const mimeType = request.headers["content-type"] ?? 'application/octet-stream'
     const {blockSize, nodeCount = dataNodesSnapshot.length} = postFileQueryParams.parse(query)
@@ -54,7 +51,7 @@ export async function postFile2(request: IncomingMessage, response: ServerRespon
         const blockSizeBytes = blockSize * 1024 * 1024
 
         let fileSize = 0
-        await pipeline(request, async function (source){
+        await pipeline(request, async function (source: AsyncIterable<Buffer>) {
             // TODO: stream chunks not waiting full block
             let blockIdx = 0;
             let blockBuffer = Buffer.alloc(0)
@@ -75,7 +72,7 @@ export async function postFile2(request: IncomingMessage, response: ServerRespon
                 // request.pause()
                 const downstreamResponse = await downstreamResponsePromise
                 // request.resume()
-                if(downstreamResponse.statusCode !== 200)
+                if (downstreamResponse.statusCode !== 200)
                     throw new Error(`Downstream${blockIdx} response status code is not 200`)
                 blockIdx++
             }
@@ -92,45 +89,32 @@ export async function postFile2(request: IncomingMessage, response: ServerRespon
                 }
             }
             // отсылаем неполный блок
-            if(blockBuffer.length > 0)
+            if (blockBuffer.length > 0)
                 await sendBlock(blockBuffer)
         })
 
         const insertFileStmt = db.prepare(`
-            insert into file(path, mimeType, blockSize, fileSize) values (?, ?, ?, ?) returning file.id;
+            insert into file(path, mimeType, blockSize, fileSize)
+            values (?, ?, ?, ?)
+            returning file.id;
         `)
-        const insertedFile = insertFileStmt.get(filePath, mimeType, blockSize, fileSize) as {id: number}
+        const insertedFile = insertFileStmt.get(filePath, mimeType, blockSize, fileSize) as { id: number }
         const fileId = insertedFile.id
 
         const insertBlocksStmt = db.prepare(`
-            insert into blocks(fileId, blockIdx, dataNode) values ${blocks.map(() => '(?, ?, ?)').join(', ')}
+            insert into blocks(fileId, blockIdx, dataNode)
+            values ${blocks.map(() => '(?, ?, ?)').join(', ')}
         `)
-        const {changes} = insertBlocksStmt.run(...blocks.flatMap(({dataNode, blockIdx}) => [fileId, blockIdx, dataNode]))
+        const {changes} = insertBlocksStmt.run(...blocks.flatMap(({
+                                                                      dataNode,
+                                                                      blockIdx
+                                                                  }) => [fileId, blockIdx, dataNode]))
         console.log(changes)
         db.exec("commit")
         return response.writeHead(200).end();
     } catch (e) {
         db.exec("revert")
+        // @ts-ignore
         return response.writeHead(500).end(e.message);
     }
 }
-
-
-// function streamToDataNodes(): NodeJS.WritableStream {
-//
-//     const rs = new ReadableStream({
-//         pull(controller) {
-//
-//         }
-//     })
-//
-//     const promise = fetch("http://localhost:3000/block", {
-//         body: rs
-//     });
-//
-//     return Writable.fromWeb(new WritableStream({
-//         write: (chunk, controller) => {
-//
-//         },
-//     }))
-// }

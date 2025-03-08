@@ -66,7 +66,8 @@ async function main() {
                 }
             }
         } catch (e) {
-            response.writeHead(500).end(e.message)
+            if(!response.headersSent)
+                response.writeHead(500).end(e.message)
         }
     }).listen(PORT)
 }

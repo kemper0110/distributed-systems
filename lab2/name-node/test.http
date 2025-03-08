@@ -1,8 +1,8 @@
 ###
-HEAD http://localhost:4000/file//cringe/aboba.ts?blockSize=1024
-
-###
 @FILENAME = 25
+###
+HEAD http://localhost:4000/file/{{FILENAME}}.mp4
+
 ###
 POST http://localhost:4000/file/{{FILENAME}}.mp4?blockSize=1&nodeCount=1
 Content-Type: video/mp4
@@ -13,3 +13,6 @@ Transfer-Encoding: chunked
 ###
 GET http://localhost:4000/file/{{FILENAME}}.mp4
 
+###
+GET http://localhost:4000/file/{{FILENAME}}.mp4
+Range: blocks=1-

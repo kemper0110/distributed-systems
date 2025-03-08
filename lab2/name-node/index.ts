@@ -2,8 +2,9 @@ import {DataNodes} from "./data-nodes";
 import http from "node:http";
 import {Readable} from "node:stream";
 import {pipeline} from "node:stream/promises";
-import { postFile2 } from "./postFile";
-import {getFile2} from "./getFile";
+import {postFile} from "./postFile";
+import {getFile} from "./getFile";
+import {optionsFile} from "./optionsFile";
 
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 4000
 
@@ -15,12 +16,15 @@ async function main() {
         // }
     ])
     await datanodes.forceUpdate()
-    // datanodes.listen().catch(e => console.error("docker listen err", e))
+    datanodes.listen().catch(e => console.error("docker listen err", e))
     const dataNode = datanodes.get()[0]
     const origin = dataNode.origin
     console.log('selected datanode:', dataNode)
 
+    let requestIdCounter = 0;
+
     http.createServer(async (request, response) => {
+        const requestId = requestIdCounter++
         const url = new URL(request.url!, `http://0.0.0.0:${PORT}`)
         const query = Object.fromEntries(url.searchParams.entries())
         const match = url.pathname.match(new RegExp("/file/(.*)"))
@@ -33,12 +37,16 @@ async function main() {
 
         try {
             switch (request.method) {
-                case "GET": {
-                    await getFile2(request, response, filePath, query, datanodes)
+                case "GET":
+                case "HEAD": {
+                    await getFile(requestId, request, response, request.method, filePath, query, datanodes)
                     return
                 }
+                case "OPTIONS": {
+                    return optionsFile(requestId, request, response)
+                }
                 case "POST": {
-                    await postFile2(request, response, filePath, query, datanodes)
+                    await postFile(requestId, request, response, filePath, query, datanodes)
                     return
                 }
             }
@@ -56,7 +64,7 @@ main().catch(e => {
 
 const memoryMetrics = false
 
-if(memoryMetrics) {
+if (memoryMetrics) {
     const formatMemoryUsage = (data: number) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
 
     setInterval(() => {

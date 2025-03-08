@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   data-node:
-    scale: 4
+    scale: 2
     image: node:23-alpine
     working_dir: /usr/app
     labels:
