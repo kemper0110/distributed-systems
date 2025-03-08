@@ -3,7 +3,7 @@ import http from "node:http";
 import {Readable} from "node:stream";
 import {pipeline} from "node:stream/promises";
 import {postFile} from "./postFile";
-import {getFile} from "./getFile";
+import {getFile} from "./getFile/getFile";
 import {optionsFile} from "./optionsFile";
 
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 4000
