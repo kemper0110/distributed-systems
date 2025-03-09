@@ -1,0 +1,63 @@
+# Узел хранения имен файлов и списка блоков
+
+## Взаимодействие
+
+### Сохранить файл
+
+Входные данные:
+- filename:string имя файла
+- blockSize:int >0
+- mimeType:string тип файла
+- file:blob файл
+
+### Получение файла целиком или последовательности блоков
+
+Входные данные:
+- filename:string
+- startBlock:int:optional >=0
+- blockCount:int:optional >0
+- Range:int,int диапазон байт у блоков
+
+Выходные данные:
+- content-type:string сохраненное значение mimeType 
+- body:binary-stream поток данных
+
+### Заменить блок файла
+
+Входные данные:
+- filename:string
+- file:blob
+- blockIdx:int
+
+### Проверка наличия файла по имени
+
+Можно добавить проверку доступности узлов, на которых расположены блоки. 
+Входные данные:
+- filename:string
+
+### Удаление файла по имени
+
+Входные данные:
+- filename:string
+
+
+## Хранение метаданных о файлах
+
+### File
+
+- path:string
+- mimeType:string
+- blockSize:int
+- blocks:string[] массив с идентификаторами узлов
+
+### Blocks
+
+- path:string
+- blockIdx:int
+- dataNode:string
+
+
+## Проблемы
+
+Хранение размера каждого блока или только последнего?
+Как правильно распределять блоки?
