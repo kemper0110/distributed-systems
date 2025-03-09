@@ -40,13 +40,15 @@ export class DataNodes {
     async forceUpdate() {
         console.log("containers list update")
 
-        const response = await fetch(new URL("/containers/json?" + new URLSearchParams({
+        const url = new URL("/containers/json?" + new URLSearchParams({
             filters: JSON.stringify({
                 label: ["lab2-container=data-node"]
             })
-        }), dockerDaemon));
+        }), dockerDaemon)
+        console.log('fetching containers', url.toString())
+        const response = await fetch(url);
         const data = await response.json();
-        const containers = data.map(c => ({origin: "http://localhost:" + c.Ports[0].PublicPort, name: c.Names[0]}));
+        const containers = data.map(c => ({origin: process.env.CONTAINER_URL_PREFIX + c.Ports[0].PublicPort, name: c.Names[0]}));
 
         console.table(containers)
         this.set(containers)

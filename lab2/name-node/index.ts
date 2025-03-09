@@ -19,12 +19,12 @@ async function main() {
     datanodes.listen().catch(e => console.error("docker listen err", e))
     const dataNode = datanodes.get()[0]
     const origin = dataNode.origin
-    console.log('selected datanode:', dataNode)
 
     let requestIdCounter = 0;
 
     http.createServer(async (request, response) => {
         const requestId = requestIdCounter++
+        console.log('request', requestId)
         const url = new URL(request.url!, `http://0.0.0.0:${PORT}`)
         const query = Object.fromEntries(url.searchParams.entries())
         const match = url.pathname.match(new RegExp("/file/(.*)"))

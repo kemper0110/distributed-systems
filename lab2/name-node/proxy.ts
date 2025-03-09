@@ -20,8 +20,6 @@ async function main() {
     // datanodes.listen().catch(e => console.error("docker listen err", e))
     const dataNode = datanodes.get()[0]
     const origin = dataNode.origin
-    console.log('selected datanode:', dataNode)
-
 
     http.createServer(async (request, response) => {
         const match = request.url.match(new RegExp("/block/(.*)"))

@@ -1,5 +1,5 @@
 ###
-@FILENAME = 25
+@FILENAME = 33
 ###
 HEAD http://localhost:4000/file/{{FILENAME}}.mp4
 
@@ -11,7 +11,7 @@ Transfer-Encoding: chunked
 < ../stream.mp4
 
 ### 55s
-POST http://localhost:4000/file/avatar.mp4?blockSize=24&nodeCount=2
+POST http://localhost:4000/file/avatar-8.mp4?blockSize=24&nodeCount=2
 Content-Type: video/mp4
 Transfer-Encoding: chunked
 

@@ -4,10 +4,10 @@
   "description": "- сохранение файла с именем;\r - получение файла по имени или любой его последовательности состоящей из подряд идущих блоков;\r - замена любого блока файла на новый;\r - проверка наличия файла по имени;\r - удаление файла по имени",
   "main": "index.js",
   "scripts": {
-    "dev:name-node": "tsx watch --experimental-sqlite name-node/index.ts",
-    "dev:name-node-proxy": "tsx watch --experimental-sqlite name-node/proxy.ts",
-    "dev:data-node": "tsx watch data-node/index.ts",
+    "dev:name-node": "tsx watch --env-file=name-node/.env --experimental-sqlite name-node/index.ts",
+    "dev:data-node": "tsx watch --env-file=data-node/.env data-node/index.ts",
     "start:data-node": "tsx data-node/index.ts",
+    "start:name-node": "tsx --inspect=0.0.0.0 --experimental-sqlite name-node/index.ts",
     "test:db": "tsx name-node/db-test.ts"
   },
   "keywords": [],

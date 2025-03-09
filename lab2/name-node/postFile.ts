@@ -11,6 +11,40 @@ export const postFileQueryParams = z.object({
     // replicationFactor: z.coerce.number().int().min(1).optional().default(1),
 })
 
+function streamToDataNode(blockIdx: number, filePath: string, origin: string) {
+    return async function (source: AsyncIterable<Buffer | Uint8Array>) {
+        // @ts-ignore
+        const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
+        const blockId = toBlockId(blockIdx, filePath)
+        const downstreamRequest = http.request(new URL("/block/" + blockId, origin), {
+            method: "POST",
+            headers: {
+                "content-type": "application/octet-stream",
+                "transfer-encoding": "chunked",
+            },
+        }, downstreamResponse => resolve(downstreamResponse))
+            .on("error", e => reject(e))
+
+        let count = 0;
+        await pipeline(
+            source,
+            async function* counter(source) {
+                for await (const chunk of source) {
+                    count += chunk.length
+                    console.log(`[${blockIdx}]`, `${chunk.length}/${count}`)
+                    yield chunk
+                }
+            },
+            downstreamRequest
+        )
+        console.log(`[${blockIdx}]`, 'sent', count)
+
+        const downstreamResponse = await downstreamResponsePromise
+        if (downstreamResponse.statusCode !== 200)
+            throw new Error(`Downstream${blockIdx} response status code is not 200`)
+    }
+}
+
 export async function postFile(requestId: number, request: IncomingMessage,
                                response: ServerResponse,
                                filePath: string,
@@ -51,47 +85,91 @@ export async function postFile(requestId: number, request: IncomingMessage,
         const blockSizeBytes = blockSize * 1024 * 1024
 
         let fileSize = 0
-        await pipeline(request, async function (source: AsyncIterable<Buffer>) {
-            // TODO: stream chunks not waiting full block
-            let blockIdx = 0;
-            let blockBuffer = Buffer.alloc(0)
+        await pipeline(
+            request,
+            async function* fileSizeCounter(source) {
+                for await (let chunk of source) {
+                    fileSize += chunk.length
+                    yield chunk
+                }
+            },
+            async function* bigChunkSplitter(source) {
+                for await (let chunk of source) {
+                    while (chunk.length > blockSizeBytes) {
+                        yield chunk.subarray(0, blockSizeBytes)
+                        chunk = chunk.subarray(blockSizeBytes)
+                    }
+                    yield chunk
+                }
+            },
+            async function sender(source) {
+                let blockIdx = 0;
+                let tail: Buffer | undefined
 
-            async function sendBlock(block: Buffer) {
-                const selectedNode = vacantNodes[blockIdx % vacantNodes.length]!
-                blocks.push({dataNode: selectedNode.name, blockIdx})
-                // @ts-ignore
-                const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
-                const blockId = toBlockId(blockIdx, filePath)
-                const downstreamRequest = http.request(new URL("/block/" + blockId, selectedNode.origin), {
-                    method: "POST",
-                    headers: {"content-type": "application/octet-stream"},
-                }, downstreamResponse => resolve(downstreamResponse))
-                    .on("error", (e) => reject(e))
-                downstreamRequest.end(block)
-                // await pipeline(request, downstreamRequest)
-                // request.pause()
-                const downstreamResponse = await downstreamResponsePromise
-                // request.resume()
-                if (downstreamResponse.statusCode !== 200)
-                    throw new Error(`Downstream${blockIdx} response status code is not 200`)
-                blockIdx++
-            }
+                while (true) {
+                    console.log(`[${requestId}]`, 'sending block', blockIdx)
+                    let readableDone = false
+                    const selectedNode = vacantNodes[blockIdx % vacantNodes.length]!
+                    blocks.push({dataNode: selectedNode.name, blockIdx})
 
-            for await (const chunk of source) {
-                fileSize += chunk.length
-                blockBuffer = Buffer.concat([blockBuffer, chunk])
-                console.log('chunk', chunk.length, 'of buffer', blockBuffer.length, 'of file', fileSize)
-                while (blockBuffer.length >= blockSizeBytes) {
-                    const block = blockBuffer.subarray(0, blockSizeBytes)
-                    blockBuffer = blockBuffer.subarray(blockSizeBytes)
-                    await sendBlock(block)
-                    console.log('sent', blockIdx)
+                    async function* chunksToBlock() {
+                        let bb = blockIdx
+                        let remainingToBlock = blockSizeBytes
+                        if (tail) {
+                            remainingToBlock -= tail.length
+                            yield tail
+                            tail = undefined
+                        }
+                        while (true) {
+                            if (remainingToBlock === 0) return;
+                            if (remainingToBlock < 0) throw new TypeError('omg remaining < 0')
+                            const {value, done} = await source.next()
+                            if (done) {
+                                console.log('source done')
+                                break;
+                            }
+                            if (value.length > remainingToBlock) {
+                                const part = value.subarray(0, remainingToBlock)
+                                tail = value.subarray(remainingToBlock)
+                                yield part
+                                remainingToBlock -= part.length
+                            } else {
+                                yield value
+                                remainingToBlock -= value.length
+                            }
+                        }
+
+                        if(!tail) {
+                            readableDone = true
+                            return;
+                        }
+
+                        if (tail.length > remainingToBlock) {
+                            const part = tail.subarray(0, remainingToBlock)
+                            tail = tail.subarray(remainingToBlock)
+                            yield part
+                            // remainingToBlock -= part.length
+                            // readableDone не выставляем, чтобы отправить tail на следующую ноду
+                        } else {
+                            yield tail
+                            tail = undefined
+                            readableDone = true
+                        }
+                    }
+
+                    await pipeline(
+                        chunksToBlock,
+                        streamToDataNode(blockIdx, filePath, selectedNode.origin)
+                    )
+
+                    if (readableDone) {
+                        break
+                    }
+                    console.log(`[${requestId}]`, 'sent block', blockIdx)
+                    blockIdx++
                 }
             }
-            // отсылаем неполный блок
-            if (blockBuffer.length > 0)
-                await sendBlock(blockBuffer)
-        })
+        )
 
         const insertFileStmt = db.prepare(`
             insert into file(path, mimeType, blockSize, fileSize)
@@ -114,6 +192,7 @@ export async function postFile(requestId: number, request: IncomingMessage,
         return response.writeHead(200).end();
     } catch (e) {
         db.exec("revert")
+        console.error(e)
         // @ts-ignore
         return response.writeHead(500).end(e.message);
     }
