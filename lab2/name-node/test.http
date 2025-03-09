@@ -11,7 +11,7 @@ Transfer-Encoding: chunked
 < ../videos/stream.mp4
 
 ### 55s
-POST http://localhost:4000/file/avatar.mp4?blockSize=24&nodeCount=2
+POST http://localhost:4000/file/avatar-two.mp4?blockSize=24&nodeCount=2
 Content-Type: video/mp4
 Transfer-Encoding: chunked
 

@@ -16,7 +16,8 @@ function streamToDataNode(blockIdx: number, filePath: string, origin: string) {
         // @ts-ignore
         const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
         const blockId = toBlockId(blockIdx, filePath)
-        const downstreamRequest = http.request(new URL("/block/" + blockId, origin), {
+        const url = new URL("/block/" + blockId, origin)
+        const downstreamRequest = http.request(url, {
             method: "POST",
             headers: {
                 "content-type": "application/octet-stream",
@@ -37,9 +38,9 @@ function streamToDataNode(blockIdx: number, filePath: string, origin: string) {
             },
             downstreamRequest
         )
-        console.log(`[${blockIdx}]`, 'sent', count)
+        console.log(`[${blockIdx}]`, 'sent', count, 'to', url.toString())
 
-        const downstreamResponse = await downstreamResponsePromise
+        const downstreamResponse: IncomingMessage = await downstreamResponsePromise
         if (downstreamResponse.statusCode !== 200)
             throw new Error(`Downstream${blockIdx} response status code is not 200`)
     }
