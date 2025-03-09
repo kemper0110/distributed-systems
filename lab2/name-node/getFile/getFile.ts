@@ -154,9 +154,11 @@ export async function getFile(
         const {getSentLen, sentLengthTracker} = SentLengthTracker()
         await pipeline(
             async function* () {
+                const nodesMap = Object.fromEntries(datanodesSnapshot.map(n => [n.name, n.origin]))
+
                 for (let i = 0; i < requestedBlocks.length; i++) {
                     const {dataNode, blockIdx} = requestedBlocks[i];
-                    const {origin} = datanodesSnapshot.find(n => n.name === dataNode)!
+                    const origin = nodesMap[dataNode]!
                     const blockId = toBlockId(blockIdx, filePath)
                     const downstreamResponse = await fetch(new URL("/block/" + blockId, origin), {
                         method: 'GET'
@@ -182,7 +184,7 @@ export async function getFile(
                         yield* takingTransformer(body.values(), blockRange.take);
                     } else {
                         for await (const chunk of body.values()) {
-                            yield Buffer.from(chunk)
+                            yield chunk
                         }
                     }
                 }
