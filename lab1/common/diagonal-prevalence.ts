@@ -12,7 +12,8 @@ export function getDiagonalNotPrevalenceRow(a: number[][]): number | -1 {
             sum += Math.abs(a[i][j]);
         }
 
-        if (sum >= a[i][i]) {
+        if (sum >= Math.abs(a[i][i])) {
+            debugger;
             return i;
         }
     }

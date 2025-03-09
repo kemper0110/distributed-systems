@@ -10,11 +10,15 @@ Accept: application/json
     [1, 1, 5]
   ],
   "b": [7, 9, -6],
-  "x": [0, 0, 0],
-  "epsilon": 0.01,
-  "maxIterations": 6,
+  "epsilon": 0.0001,
+  "maxIterations": 20,
   "minRowsPerWorker": 2
 }
+### [3, 3, -2.4]
+# 3*4 -3 -2.4 = 7
+# 6*2 -2.4 = 9
+# 6 - 2.4 *5 = -6
+
 
 ###
 POST localhost:4001/solve
@@ -22,9 +26,9 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "epsilon": 0.01,
+  "epsilon": 0.000001,
   "maxIterations": 50,
-  "minRowsPerWorker": 5,
+  "minRowsPerWorker": 2,
   "a": [
     [125, -3, -1, -9, -9],
     [10, -628, -4, 10, 8],
@@ -32,7 +36,6 @@ Accept: application/json
     [5, -8, -8, 555, 4],
     [-4, -8, 4, 6, -333]
   ],
-  "b": [2,5,0,8,-10],
-  "x": [0,0,0,0,0]
+  "b": [2,5,0,8,-10]
 }
-### [0.9, 3.7, -4, 5,-5]
+###
