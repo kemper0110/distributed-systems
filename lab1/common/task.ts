@@ -20,7 +20,7 @@ export const taskSchema = z.object({
     }).refine(data => data.a.every(row => row.length === data.a[0].length), {
         message: "Все строки матрицы a должны иметь одинаковую длину",
         path: ['a']
-    }).refine(data => data.x.length === data.b.length, {
+    }).refine(data => !data.x || data.x.length === data.b.length, {
         message: "Длина вектора x должна быть равной длине вектора b",
         path: ['x']
     }).refine(data => {
