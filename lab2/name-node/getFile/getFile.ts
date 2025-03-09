@@ -5,6 +5,7 @@ import {BlockNotFoundError} from "../BlockNotFoundError";
 import {toBlockId} from "../common";
 import {Range, RangeError, rangeParser} from "../range-parser";
 import {getFileInfo} from "../getFileInfo";
+import * as http from "node:http";
 
 export type BlockInfo = { dataNode: string; blockIdx: number }
 
@@ -81,12 +82,14 @@ async function* takingTransformer(source: AsyncIterable<Buffer | Uint8Array>, bl
 
 function SentLengthTracker() {
     let sentLen = 0
+
     async function* sentLengthTracker(source: AsyncIterable<Buffer<ArrayBufferLike> | Uint8Array<ArrayBufferLike>>): AsyncGenerator<Buffer<ArrayBufferLike> | Uint8Array<ArrayBufferLike>, void> {
         for await(const chunk of source) {
             sentLen += chunk.length
             yield chunk
         }
     }
+
     return {
         getSentLen: () => sentLen,
         sentLengthTracker
@@ -160,30 +163,40 @@ export async function getFile(
                     const {dataNode, blockIdx} = requestedBlocks[i];
                     const origin = nodesMap[dataNode]!
                     const blockId = toBlockId(blockIdx, filePath)
-                    const downstreamResponse = await fetch(new URL("/block/" + blockId, origin), {
-                        method: 'GET'
-                    });
-                    if (downstreamResponse.status === 404)
+                    // @ts-ignore
+                    const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
+                    const url = new URL("/block/" + blockId, origin)
+                    console.log('sending request to', url.toString())
+                    http.request(url, {
+                        method: 'GET',
+                        headers: {
+                            'accept': 'application/octet-stream',
+                        }
+                    }, downstreamResponse => resolve(downstreamResponse))
+                        .on("error", e => reject(e))
+                        .end()
+                    const downstreamResponse: IncomingMessage = await downstreamResponsePromise
+                    if (downstreamResponse.statusCode === 404)
                         throw new BlockNotFoundError(dataNode, blockIdx)
-                    const body = downstreamResponse.body!
 
                     const skipping = i === 0 && blockRange != undefined && blockRange.skip > 0
                     const taking = i === requestedBlocks.length - 1 && blockRange != undefined && blockRange.take > 0
 
+                    console.log(`[${requestId}]`, 'skipping', skipping, 'taking', taking)
                     if (skipping && taking) {
                         yield* takingTransformer(
                             skippingTransformer(
-                                body.values(),
+                                downstreamResponse,
                                 blockRange.skip
                             ),
                             blockRange.take
                         )
                     } else if (skipping) {
-                        yield* skippingTransformer(body.values(), blockRange.skip);
+                        yield* skippingTransformer(downstreamResponse, blockRange.skip);
                     } else if (taking) {
-                        yield* takingTransformer(body.values(), blockRange.take);
+                        yield* takingTransformer(downstreamResponse, blockRange.take);
                     } else {
-                        for await (const chunk of body.values()) {
+                        for await (const chunk of downstreamResponse) {
                             yield chunk
                         }
                     }

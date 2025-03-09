@@ -8,21 +8,21 @@ POST http://localhost:4000/file/{{FILENAME}}.mp4?blockSize=1&nodeCount=2
 Content-Type: video/mp4
 Transfer-Encoding: chunked
 
-< ../stream.mp4
+< ../videos/stream.mp4
 
 ### 55s
-POST http://localhost:4000/file/avatar-8.mp4?blockSize=24&nodeCount=2
+POST http://localhost:4000/file/avatar-two.mp4?blockSize=24&nodeCount=2
 Content-Type: video/mp4
 Transfer-Encoding: chunked
 
-< ../avatar.mp4
+< ../videos/avatar.mp4
 
 ###
 POST http://localhost:4000/file/rica.mp4?blockSize=16&nodeCount=2
 Content-Type: video/mp4
 Transfer-Encoding: chunked
 
-< ../costa-rica.mp4
+< ../videos/costa-rica.mp4
 
 ###
 GET http://localhost:4000/file/{{FILENAME}}.mp4
