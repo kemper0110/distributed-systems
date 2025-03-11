@@ -5,6 +5,7 @@ import {pipeline} from "node:stream/promises";
 import {postFile} from "./postFile";
 import {getFile} from "./getFile/getFile";
 import {optionsFile} from "./optionsFile";
+import {deleteFile} from "./deleteFile";
 
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 4000
 
@@ -47,6 +48,10 @@ async function main() {
                 }
                 case "POST": {
                     await postFile(requestId, request, response, filePath, query, datanodes)
+                    return
+                }
+                case "DELETE": {
+                    await deleteFile(requestId, request, response, filePath, datanodes)
                     return
                 }
             }

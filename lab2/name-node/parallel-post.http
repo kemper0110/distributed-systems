@@ -1,0 +1,29 @@
+###
+@TEST_ID = 1
+### thread-1
+POST http://localhost:4000/file/avatar-test{{TEST_ID}}-thread1.mp4?blockSize=24&nodeCount=2
+Content-Type: video/mp4
+Transfer-Encoding: chunked
+
+< ../videos/avatar.mp4
+
+### thread-2
+POST http://localhost:4000/file/avatar-test{{TEST_ID}}-thread2.mp4?blockSize=24&nodeCount=2
+Content-Type: video/mp4
+Transfer-Encoding: chunked
+
+< ../videos/avatar.mp4
+
+### thread-3
+POST http://localhost:4000/file/avatar-test{{TEST_ID}}-thread3.mp4?blockSize=24&nodeCount=2
+Content-Type: video/mp4
+Transfer-Encoding: chunked
+
+< ../videos/avatar.mp4
+
+### thread-4
+POST http://localhost:4000/file/avatar-test{{TEST_ID}}-thread4.mp4?blockSize=24&nodeCount=2
+Content-Type: video/mp4
+Transfer-Encoding: chunked
+
+< ../videos/avatar.mp4

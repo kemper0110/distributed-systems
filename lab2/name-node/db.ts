@@ -11,7 +11,7 @@ db.exec(`create table if not exists file (
 );`);
 
 db.exec(`create table if not exists blocks(
-    fileId integer references file(id) not null,
+    fileId integer references file(id) ON DELETE CASCADE not null,
     blockIdx integer not null,
     dataNode varchar(50) not null
 );`);

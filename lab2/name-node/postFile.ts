@@ -77,6 +77,7 @@ export async function postFile(requestId: number, request: IncomingMessage,
             limit ?;
         `)
         const vacantNodeNames = nodesStmt.all(...availableNodeNames, nodeCount) as { name: string }[]
+        console.info('selected nodes', vacantNodeNames)
         const vacantNodes = vacantNodeNames.map(({name}) =>
             dataNodesSnapshot.find(n => n.name === name)
         )

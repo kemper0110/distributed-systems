@@ -80,22 +80,6 @@ async function* takingTransformer(source: AsyncIterable<Buffer | Uint8Array>, bl
     }
 }
 
-function SentLengthTracker() {
-    let sentLen = 0
-
-    async function* sentLengthTracker(source: AsyncIterable<Buffer<ArrayBufferLike> | Uint8Array<ArrayBufferLike>>): AsyncGenerator<Buffer<ArrayBufferLike> | Uint8Array<ArrayBufferLike>, void> {
-        for await(const chunk of source) {
-            sentLen += chunk.length
-            yield chunk
-        }
-    }
-
-    return {
-        getSentLen: () => sentLen,
-        sentLengthTracker
-    }
-}
-
 export async function getFile(
     requestId: number,
     request: IncomingMessage,
@@ -154,7 +138,6 @@ export async function getFile(
         if (method === "HEAD")
             return response.end()
 
-        const {getSentLen, sentLengthTracker} = SentLengthTracker()
         await pipeline(
             async function* () {
                 const nodesMap = Object.fromEntries(datanodesSnapshot.map(n => [n.name, n.origin]))
@@ -166,12 +149,12 @@ export async function getFile(
                     // @ts-ignore
                     const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
                     const url = new URL("/block/" + blockId, origin)
-                    console.log('sending request to', url.toString())
+                    // console.log('fetching from', url.toString())
                     http.request(url, {
                         method: 'GET',
                         headers: {
                             'accept': 'application/octet-stream',
-                        }
+                        },
                     }, downstreamResponse => resolve(downstreamResponse))
                         .on("error", e => reject(e))
                         .end()
@@ -182,7 +165,6 @@ export async function getFile(
                     const skipping = i === 0 && blockRange != undefined && blockRange.skip > 0
                     const taking = i === requestedBlocks.length - 1 && blockRange != undefined && blockRange.take > 0
 
-                    console.log(`[${requestId}]`, 'skipping', skipping, 'taking', taking)
                     if (skipping && taking) {
                         yield* takingTransformer(
                             skippingTransformer(
@@ -196,16 +178,12 @@ export async function getFile(
                     } else if (taking) {
                         yield* takingTransformer(downstreamResponse, blockRange.take);
                     } else {
-                        for await (const chunk of downstreamResponse) {
-                            yield chunk
-                        }
+                        yield* downstreamResponse
                     }
                 }
             },
-            sentLengthTracker,
             response
         )
-        console.log('we have sent', getSentLen())
         response.end()
     } catch (e) {
         if (e.code === 'ERR_STREAM_PREMATURE_CLOSE') {

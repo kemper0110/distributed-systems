@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   data-node:
     scale: 2
@@ -19,7 +18,7 @@ services:
       NODE_ENV: production
       BLOCKS_PATH: /usr/blocks
       PORT: 3000
-    mem_limit: 80M
+    mem_limit: 128M
     cpus: 0.2
   name-node:
     image: node:23-alpine
@@ -37,5 +36,5 @@ services:
       PORT: 4000
       DOCKER_DAEMON: "http://host.docker.internal:2375"
       CONTAINER_URL_PREFIX: "http://host.docker.internal:"
-    mem_limit: 80M
-    cpus: 0.4
+    mem_limit: 256M
+    cpus: 2.0

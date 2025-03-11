@@ -21,7 +21,7 @@ async function main() {
             return response.writeHead(404).end();
 
         const filePath = resolveBlockPath(blockId)
-        console.log(request.url, blockId, filePath, JSON.stringify(request.headers, null, 2))
+        console.log(request.url, blockId, filePath)
 
         try {
             switch (request.method) {
