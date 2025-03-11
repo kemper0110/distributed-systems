@@ -1,5 +1,5 @@
 ###
-@FILENAME = 33
+@FILENAME = 1
 ###
 HEAD http://localhost:4000/file/{{FILENAME}}.mp4
 
@@ -30,3 +30,10 @@ GET http://localhost:4000/file/{{FILENAME}}.mp4
 ###
 GET http://localhost:4000/file/{{FILENAME}}.mp4
 Range: bytes=0-4049576
+
+
+###
+DELETE http://localhost:4000/file/1.mp4
+
+###
+DELETE http://localhost:4000/file/2.mp4

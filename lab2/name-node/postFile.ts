@@ -68,19 +68,19 @@ export async function postFile(requestId: number, request: IncomingMessage,
         const availableNodeNames = dataNodesSnapshot.map(n => n.name)
         const nodesStmt = db.prepare(`
             WITH nodes(name) as (VALUES ${availableNodeNames.map(() => '(?)').join(', ')})
-            SELECT n.name, b.dataNode, COUNT(*) AS blockCount, f.blockSize, COUNT(*) * f.blockSize as totalBlockSize
+            SELECT n.name, COUNT(*) AS blockCount, f.blockSize, COUNT(*) * f.blockSize as totalBlockSize
             FROM nodes n
                      LEFT JOIN blocks b on b.dataNode = n.name
                      LEFT JOIN file f on f.id = b.fileId
-            GROUP BY b.dataNode
+            GROUP BY n.name, f.blockSize
             ORDER BY totalBlockSize
             limit ?;
         `)
         const vacantNodeNames = nodesStmt.all(...availableNodeNames, nodeCount) as { name: string }[]
-        console.info('selected nodes', vacantNodeNames)
         const vacantNodes = vacantNodeNames.map(({name}) =>
             dataNodesSnapshot.find(n => n.name === name)
         )
+        console.info('selected nodes', vacantNodes.map(n => n?.name))
 
         const blocks = [] as Array<{ dataNode: string, blockIdx: number }>
 
