@@ -1,6 +1,14 @@
 import {pipeline} from "node:stream/promises";
 import {setTimeout} from "timers/promises";
 
+/*
+    Примерный алгоритм, как сделать стриминг блоков файла на дата-ноды.
+    Вместо реальной отправки, блоки выводятся в консольку.
+    Есть неприятная обработка последнего блока="хвоста"(`tail`),
+    когда последние байты в потоке не умещаются на текущую дата-ноду.
+ */
+
+
 function emitter(channel: number) {
     return async function emit(source: AsyncIterable<Buffer | Uint8Array>) {
         console.log(`[${channel}]`, 'start')
@@ -21,6 +29,15 @@ pipeline(
         for (let i = 0; i < 20; i++) {
             await setTimeout(100)
             yield Buffer.from(i.toString().padStart(chunkSize, '0'))
+        }
+    },
+    async function* bigChunkSplitter(source) {
+        for await (let chunk of source) {
+            while (chunk.length > maxEmitterByteCount) {
+                yield chunk.subarray(0, maxEmitterByteCount)
+                chunk = chunk.subarray(maxEmitterByteCount)
+            }
+            yield chunk
         }
     },
     async function (source) {
@@ -76,14 +93,3 @@ pipeline(
 )
     .then(() => console.log('done'))
     .catch(e => console.error(e))
-
-
-async function* bigChunkSplitter(source) {
-    for await (let chunk of source) {
-        while (chunk.length > maxEmitterByteCount) {
-            yield chunk.subarray(0, maxEmitterByteCount)
-            chunk = chunk.subarray(maxEmitterByteCount)
-        }
-        yield chunk
-    }
-}

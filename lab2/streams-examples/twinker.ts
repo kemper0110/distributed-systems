@@ -1,5 +1,15 @@
 import * as fs from "node:fs";
 
+
+/*
+    Попытка Mistral AI сгенерировать код для node:stream,
+    который читает данные из одного файла и пишет эти же данные в два файла,
+    не перегружая потребителей данными. Чтение с диска быстрее, чем запись.
+
+    Используется традиционный подход node:stream с on('data') и on('drain').
+ */
+
+
 const inputStream = fs.createReadStream("chunks/chunk1.txt");
 const outputStream1 = fs.createWriteStream("chunks/chunk2.txt");
 const outputStream2 = fs.createWriteStream("chunks/chunk3.txt");

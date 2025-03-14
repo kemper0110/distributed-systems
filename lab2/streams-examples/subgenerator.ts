@@ -1,6 +1,13 @@
 import {pipeline} from "node:stream/promises";
 import {setTimeout} from "timers/promises";
 
+/*
+    ТЕСТ
+    Будет ли yield* subgenerator(source) выполняться лениво?
+    Ответ: Будет!
+ */
+
+
 async function* subgenerator(source) {
     for await (const chunk of source) {
         console.log('subgenerated')
