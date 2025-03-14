@@ -2,6 +2,15 @@ import * as fs from 'node:fs';
 import {Writable} from "node:stream";
 import {pipeline} from "node:stream/promises";
 
+/*
+    Жалкая попытка Mistral AI сгенерировать код для задачи из `twinker.ts`.
+    Проблема в вызове `writables[writableIndex].write(chunkToWrite)`,
+    который не отслеживает возвращаемый boolean.
+    Этот код приведет к большому потреблению памяти.
+
+    НЕ ИСПОЛЬЗУЙТЕ ЭТОТ КОД
+ */
+
 const readStream = fs.createReadStream('../costa-rica.mp4');
 
 const CHUNK_SIZE = 1024 * 1024; // 1MB

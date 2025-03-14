@@ -1,7 +1,5 @@
 import {DataNodes} from "./data-nodes";
 import http from "node:http";
-import {Readable} from "node:stream";
-import {pipeline} from "node:stream/promises";
 import {postFile} from "./postFile";
 import {getFile} from "./getFile/getFile";
 import {optionsFile} from "./optionsFile";
@@ -18,8 +16,6 @@ async function main() {
     ])
     await datanodes.forceUpdate()
     datanodes.listen().catch(e => console.error("docker listen err", e))
-    const dataNode = datanodes.get()[0]
-    const origin = dataNode.origin
 
     let requestIdCounter = 0;
 

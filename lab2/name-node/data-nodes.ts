@@ -2,6 +2,10 @@ import {setTimeout as $setTimeout} from "node:timers/promises";
 import {read} from "node:fs";
 import {nanoid} from "nanoid";
 
+/*
+    Слушаем ивенты от докера и обновляем список дата-нод
+ */
+
 const dockerDaemon = process.env.DOCKER_DAEMON || "http://localhost:2375";
 
 // attach, commit, copy, create, destroy, detach, die, exec_create, exec_detach, exec_start, exec_die, export, health_status, kill, oom, pause, rename, resize, restart, start, stop, top, unpause, update, prune,

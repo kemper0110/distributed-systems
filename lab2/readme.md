@@ -21,7 +21,8 @@
 GET запрос на файл поддерживает Range запросы.
 Можно смотреть кино в браузере из любого места в видео.
 
-
+Начинал с использования fastify, но потом отказался.
+Необходимо более низкоуровневое применение http, поэтому реализовал на node:http.
 
 # ССЫЛОЧКИ
 
@@ -46,6 +47,6 @@ https://developer.mozilla.org/en-US/docs/Web/API/Streams_API
 docker
 https://docs.docker.com/reference/api/engine/version/v1.48/#tag/System/operation/SystemEvents
 
-fastify ~ удалил из проекта ибо лишь мешает
+fastify
 https://fastify.dev/docs/latest/Reference/Routes/#url-building
 https://backend.cafe/how-to-implement-video-streaming-with-fastify
