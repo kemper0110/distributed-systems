@@ -1,0 +1,22 @@
+###
+POST http://localhost:3000/block/stream
+Content-Type: video/mp4
+
+< ./videos/stream.mp4
+
+###
+GET http://localhost:3000/block/stream
+
+
+###
+POST http://localhost:3000/file/stream?blockSize=1
+Content-Type: video/mp4
+
+< ./videos/stream.mp4
+
+###
+GET http://localhost:3000/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic3RyZWFtIiwiYmxvY2tTaXplIjoxLCJzaXplIjoxMjEyNzA4MSwibWltZVR5cGUiOiJ2aWRlby9tcDQifQ.W_gvVOvk89jo1tiJ9uEvMYmHssemcPn0b-lA-XHI6IM
+
+###
+GET http://localhost:3000/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic3RyZWFtIiwiYmxvY2tTaXplIjoxLCJzaXplIjoxMjEyNzA4MSwibWltZVR5cGUiOiJ2aWRlby9tcDQifQ.W_gvVOvk89jo1tiJ9uEvMYmHssemcPn0b-lA-XHI6IM
+Range: bytes=1393216-6000000

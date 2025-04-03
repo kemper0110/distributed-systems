@@ -1,0 +1,22 @@
+services:
+  data-node:
+    scale: 4
+    image: node:23-alpine
+    working_dir: /usr/app
+    labels:
+      lab3-container: data-node
+    ports: ["3000"]
+    volumes:
+      - type: volume
+        target: /usr/blocks
+      - type: bind
+        source: .
+        target: /usr/app
+        read_only: true
+    command: ['npm', 'run', 'start:data-node']
+    environment:
+      NODE_ENV: production
+      BLOCKS_PATH: /usr/blocks
+      PORT: 3000
+    mem_limit: 128M
+    cpus: 0.2
