@@ -6,6 +6,7 @@ import {Range, RangeError, rangeParser} from "../range-parser";
 import fs from "fs";
 import {acceptRanges} from "./utils";
 import {clearInterval, setInterval} from "node:timers";
+import {setTimeout} from "node:timers/promises";
 
 type BlockRangeStreamInfo = {
     blockStart: number
@@ -30,6 +31,8 @@ function getRangeInfo(byteRange: Range, blockSizeBytes: number): BlockRangeStrea
 }
 
 export async function getFile(request: IncomingMessage, response: ServerResponse, fileKey: string, nodes: Node[], self: Node, blockPath: string, method: 'GET' | 'HEAD') {
+    const acc = request.headers.accept?.substring(0, 15)
+
     const file = fileFromKey(fileKey)
     const {mimeType, size, blockSize} = file
 
@@ -68,10 +71,14 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
 
     const nodeFinder = makeNodeFinder(nodes)
 
+    console.log(acc, 'start wait')
+    await setTimeout(1000)
+    console.log(acc, 'end wait')
+
     let key;
     try {
         key = setInterval(() => {
-            console.log(request.headers.accept?.substring(0, 15), request.destroyed, request.closed, request.aborted)
+            console.log(acc, request.destroyed, request.closed, request.aborted)
         }, 500)
 
         let len = 0;
@@ -108,13 +115,13 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
             async function*(source) {
                 for await (const chunk of source) {
                     len += chunk.length
-                    console.log(request.headers.accept?.substring(0, 15), `${chunk.length}/${len}`)
+                    console.log(acc, `${chunk.length}/${len}`)
                     yield chunk
                 }
             },
             response
         )
-        console.log(request.headers.accept?.substring(0, 15), 'sent', len, 'to')
+        console.log(acc, 'sent', len, 'to')
         return response.end()
     } finally {
         clearInterval(key)
