@@ -5,7 +5,6 @@ import * as fsp from "fs/promises";
 import {resolveBlockPath} from "../models/file";
 import {Range, RangeError, rangeParser} from "../range-parser";
 import {acceptRanges} from "./utils";
-import {PipelineDestination} from "node:stream";
 
 export async function getBlock(request: IncomingMessage, response: ServerResponse, blockName: string, blockPath: string, method: 'GET' | 'HEAD') {
     const filePath = resolveBlockPath(blockPath, blockName)
@@ -35,13 +34,15 @@ export async function getBlock(request: IncomingMessage, response: ServerRespons
 
     if(method === 'HEAD')
         return response.end()
-    return await pipeline(readBlock(filePath, range), response)
+
+    await pipeline(readBlock(filePath, range?.start, range?.end), response)
+    return response.end()
 }
 
-export function readBlock(filePath: string, range: Range | undefined) {
+export function readBlock(filePath: string, start?: number, end?: number) {
     return fs.createReadStream(filePath, {
         // highWaterMark: 1024 * 1024 // todo: test big highWaterMark
-        start: range?.start,
-        end: range?.end,
+        start,
+        end,
     })
 }

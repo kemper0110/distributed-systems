@@ -7,6 +7,7 @@ import fs from "fs";
 import {acceptRanges} from "./utils";
 import {clearInterval, setInterval} from "node:timers";
 import {setTimeout} from "node:timers/promises";
+import {readBlock} from "./getBlock";
 
 type BlockRangeStreamInfo = {
     blockStart: number
@@ -31,7 +32,7 @@ function getRangeInfo(byteRange: Range, blockSizeBytes: number): BlockRangeStrea
 }
 
 export async function getFile(request: IncomingMessage, response: ServerResponse, fileKey: string, nodes: Node[], self: Node, blockPath: string, method: 'GET' | 'HEAD') {
-    const acc = request.headers.accept?.substring(0, 15)
+    const acc = '"' + request.headers.accept?.substring(0, 9) + ' ' + request.headers.range + '"'
 
     const file = fileFromKey(fileKey)
     const {mimeType, size, blockSize} = file
@@ -69,11 +70,7 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
     if (method === "HEAD")
         return response.end()
 
-    const nodeFinder = makeNodeFinder(nodes)
-
-    console.log(acc, 'start wait')
-    await setTimeout(1000)
-    console.log(acc, 'end wait')
+    // const nodeFinder = makeNodeFinder(nodes)
 
     let key;
     try {
@@ -90,26 +87,16 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
                         file,
                         idx: i
                     })
-                    const node = nodeFinder(bHash)
+                    // const node = nodeFinder(bHash)
                     // if (node === self) {
                     // } else {
                     // }
 
-                    const stream = fs.createReadStream(resolveBlockPath(blockPath, bHash), {
-                        // highWaterMark: 1024 * 1024 // todo: test big highWaterMark
-                        start: i === 0 && blockRange.skip > 0 ? blockRange.skip : undefined,
-                        end: i === blockRange.blockEnd && blockRange.take > 0 ? blockRange.take : undefined,
-                    })
-
-                    let data = Buffer.alloc(0)
-                    await pipeline(stream, async function(source){
-                        for await (const chunk of source) {
-                            data = Buffer.concat([data, chunk])
-                        }
-                    })
-                    console.log('read', i, 'block')
-                    yield data
-                    // yield* stream
+                    const stream = readBlock(resolveBlockPath(blockPath, bHash),
+                        i === 0 && blockRange.skip > 0 ? blockRange.skip : undefined,
+                        i === blockRange.blockEnd && blockRange.take > 0 ? blockRange.take : undefined
+                    )
+                    yield* stream
                 }
             },
             async function*(source) {
@@ -122,8 +109,10 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
             response
         )
         console.log(acc, 'sent', len, 'to')
-        return response.end()
+    } catch (e) {
+        console.log('error!!!', acc, e)
     } finally {
+        console.log(acc, 'finally!')
         clearInterval(key)
     }
 }
