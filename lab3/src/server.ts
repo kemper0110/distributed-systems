@@ -14,32 +14,36 @@ export async function createServer(port: number | undefined, nodes: Node[], self
             const url = new URL(request.url!, `http://0.0.0.0:${port ?? 80}`)
             const query = Object.fromEntries(url.searchParams.entries())
 
-            const fileName = url.pathname.match(new RegExp("/file/(.*)"))?.[1]
             const blockName = url.pathname.match(new RegExp("/block/(.*)"))?.[1]
-
-            switch (true) {
-                case blockName && (request.method === 'GET' || request.method === 'HEAD'): {
-                    return await getBlock(request, response, blockName, blockPath, request.method)
-                }
-                case blockName && request.method === 'POST': {
-                    return await postBlock(request, response, blockName, blockPath)
-                }
-                case blockName && request.method === 'OPTIONS': {
-                    return response.writeHead(200, {'allow': 'GET, HEAD, POST, OPTIONS'}).end()
-                }
-                case fileName && (request.method === 'GET' || request.method === 'HEAD'): {
-                    return await getFile(request, response, fileName, nodes, self, blockPath, request.method)
-                }
-                case fileName && request.method === 'POST': {
-                    return await postFile(request, response, query, nodes, self, blockPath, fileName)
-                }
-                case fileName && request.method === 'OPTIONS': {
-                    return response.writeHead(200, {'allow': 'GET, HEAD, POST, OPTIONS'}).end()
-                }
-                default: {
-                    response.writeHead(404).end()
+            if(blockName) {
+                switch (request.method) {
+                    case 'GET': case 'HEAD': {
+                        return await getBlock(request, response, blockName, blockPath, request.method)
+                    }
+                    case 'POST': {
+                        return await postBlock(request, response, blockName, blockPath)
+                    }
+                    case 'OPTIONS': {
+                        return response.writeHead(200, {'allow': 'GET, HEAD, POST, OPTIONS'}).end()
+                    }
                 }
             }
+
+            const fileName = url.pathname.match(new RegExp("/file/(.*)"))?.[1]
+            if(fileName) {
+                switch (request.method) {
+                    case 'GET': case 'HEAD': {
+                        return await getFile(request, response, fileName, nodes, self, blockPath, request.method)
+                    }
+                    case 'POST': {
+                        return await postFile(request, response, query, nodes, self, blockPath, fileName)
+                    }
+                    case 'OPTIONS': {
+                        return response.writeHead(200, {'allow': 'GET, HEAD, POST, OPTIONS'}).end()
+                    }
+                }
+            }
+            response.writeHead(404).end()
         } catch (e) {
             const acc = request.headers.accept
             if(e?.code === 'ERR_STREAM_PREMATURE_CLOSE') {
