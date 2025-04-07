@@ -9,6 +9,12 @@ export async function postBlock(request: IncomingMessage, response: ServerRespon
     const stats = await fsp.stat(filePath).catch<Error>(e => e);
     if (!(stats instanceof Error))
         return response.writeHead(409).end();
-    await pipeline(request, fs.createWriteStream(filePath))
+    await pipeline(request, saveBlock(filePath))
     return response.writeHead(200).end()
+}
+
+export function saveBlock(filePath: string) {
+    return fs.createWriteStream(filePath, {
+        // highWaterMark: 1024 * 1024 // todo: test big highWaterMark
+    })
 }

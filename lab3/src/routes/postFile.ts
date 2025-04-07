@@ -1,21 +1,17 @@
 import {IncomingMessage, ServerResponse} from "node:http";
 import {pipeline} from "node:stream/promises";
 import {z} from "zod";
-import {blockHash, File, fileKey, resolveBlockPath} from "../models/file";
+import {blockCount, blockHash, File, fileKey, resolveBlockPath} from "../models/file";
 import {makeNodeFinder, Node} from "../models/node";
 import * as http from "node:http";
 import fs from "fs";
+import {saveBlock} from "./postBlock";
+import {agent} from "./agent";
+import {Readable} from "node:stream";
 
 const postFileQueryParams = z.object({
     blockSize: z.coerce.number().int().gt(0).optional().default(1),
 })
-
-// function saveBlock(filePath: string) {
-//     return async function (source: AsyncIterable<Buffer | Uint8Array>) {
-//         console.log('self node local write', filePath)
-//         return
-//     }
-// }
 
 function sendBlock(blockHash: string, nodeUrl: string, size: number) {
     return async (source: AsyncIterable<Buffer | Uint8Array>) => {
@@ -30,8 +26,13 @@ function sendBlock(blockHash: string, nodeUrl: string, size: number) {
                 "content-type": "application/octet-stream",
                 "content-length": size,
             },
+            agent,
         }, downstreamResponse => resolve(downstreamResponse))
             .on("error", e => reject(e))
+
+        const downstreamResponse: IncomingMessage = await downstreamResponsePromise
+        if (downstreamResponse.statusCode !== 200)
+            throw new Error(`Downstream response status code is not 200`)
 
         let count = 0;
         await pipeline(
@@ -46,10 +47,6 @@ function sendBlock(blockHash: string, nodeUrl: string, size: number) {
             downstreamRequest
         )
         console.log('sent', count, 'to', url.toString())
-
-        const downstreamResponse: IncomingMessage = await downstreamResponsePromise
-        if (downstreamResponse.statusCode !== 200)
-            throw new Error(`Downstream response status code is not 200`)
     }
 }
 
@@ -59,37 +56,24 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
 
     const cl = request.headers["content-length"]
     if (!cl)
-        return response.writeHead(400).end("Content-Length header is required")
+        return response.writeHead(400).end("Server does not support Transfer-Encoding: chunked. Please provide Content-Length.")
 
-    const file = {
+    const file: File = {
         name: fileName,
         blockSize,
         size: parseInt(cl),
         mimeType: request.headers["content-type"] ?? 'application/octet-stream'
-    } satisfies File
+    }
 
     const key = fileKey(file)
-
-    console.log('file', file, 'filekey', key)
-
     const blockSizeBytes = 1024 * 1024 * blockSize
-
+    const bc = blockCount(file.size, blockSizeBytes)
     const nodeFinder = makeNodeFinder(nodes)
 
-    // осталось лишь отстримить файл блоками на узлы... уххх
-
+    console.log('file', file, 'filekey', key)
     await pipeline(
         request,
-        async function* (source) {
-            for await (let chunk of source) {
-                while (chunk.length > blockSizeBytes) {
-                    yield chunk.subarray(0, blockSizeBytes)
-                    chunk = chunk.subarray(blockSizeBytes)
-                }
-                yield chunk
-            }
-        },
-        // тут sender как в лабе2, даже проще
+        makeBigChunkSplitter(blockSizeBytes),
         async function sender(source) {
             let blockIdx = 0;
             let tail: Buffer | undefined
@@ -148,20 +132,17 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                     idx: blockIdx,
                 })
                 const node = nodeFinder(bHash)
-                // if(node !== self) {
-                //     await pipeline(
-                //         chunksToBlock,
-                //         sendBlock(bHash, node.url, 0) // todo: calculate real size (really hard)
-                //     )
-                // } else {
-                await pipeline(
-                    chunksToBlock,
-                    fs.createWriteStream(resolveBlockPath(blockPath, bHash), {
-                        // highWaterMark: 1024 * 1024 // todo: test big highWaterMark
-                    }),
-                    // saveBlock(resolveBlockPath(blockPath, bHash))
-                )
-                // }
+                if (node !== self) {
+                    await pipeline(
+                        chunksToBlock,
+                        sendBlock(bHash, node.url, 0) // todo: calculate real size (really hard)
+                    )
+                } else {
+                    await pipeline(
+                        chunksToBlock,
+                        saveBlock(resolveBlockPath(blockPath, bHash)),
+                    )
+                }
 
                 if (readableDone) {
                     break
@@ -173,4 +154,16 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
     )
 
     response.writeHead(200).end(key)
+}
+
+function makeBigChunkSplitter(blockSizeBytes: number) {
+    return async function* bigChunkSplitter(source: Readable) {
+        for await (let chunk of source) {
+            while (chunk.length > blockSizeBytes) {
+                yield chunk.subarray(0, blockSizeBytes)
+                chunk = chunk.subarray(blockSizeBytes)
+            }
+            yield chunk
+        }
+    }
 }
