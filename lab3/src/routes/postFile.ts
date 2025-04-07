@@ -13,13 +13,12 @@ const postFileQueryParams = z.object({
     blockSize: z.coerce.number().int().gt(0).optional().default(1),
 })
 
-function sendBlock(blockHash: string, nodeUrl: string, size: number) {
+function saveRemoteBlock(blockHash: string, nodeUrl: string, size: number) {
     return async (source: AsyncIterable<Buffer | Uint8Array>) => {
         // @ts-ignore
         const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
 
-        const url = new URL("/file", nodeUrl)
-        url.searchParams.append("hash", blockHash)
+        const url = new URL("/file/" + blockHash, nodeUrl)
         const downstreamRequest = http.request(url, {
             method: "POST",
             headers: {
@@ -75,19 +74,24 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
         request,
         makeBigChunkSplitter(blockSizeBytes),
         async function sender(source) {
-            let blockIdx = 0;
             let tail: Buffer | undefined
-
-            while (true) {
+            for (let blockIdx = 0; blockIdx < bc; ++blockIdx) {
                 console.log('sending block', blockIdx)
 
                 let readableDone = false
-
                 async function* chunksToBlock() {
                     let remainingToBlock = blockSizeBytes
+                    function yieldPart(part: Buffer) {
+                        remainingToBlock -= part.length
+                        return part
+                    }
+                    function yieldTailSplit(buf: Buffer) {
+                        const part = buf.subarray(0, remainingToBlock)
+                        tail = buf.subarray(remainingToBlock)
+                        return yieldPart(part)
+                    }
                     if (tail) {
-                        remainingToBlock -= tail.length
-                        yield tail
+                        yield yieldPart(tail)
                         tail = undefined
                     }
                     while (true) {
@@ -99,14 +103,10 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                             console.log('source done')
                             break;
                         }
-                        if (value.length > remainingToBlock) {
-                            const part = value.subarray(0, remainingToBlock)
-                            tail = value.subarray(remainingToBlock)
-                            yield part
-                            remainingToBlock -= part.length
+                        if (value.length <= remainingToBlock) {
+                            yield yieldPart(value)
                         } else {
-                            yield value
-                            remainingToBlock -= value.length
+                            yield yieldTailSplit(value)
                         }
                     }
 
@@ -116,9 +116,7 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                     }
 
                     if (tail.length > remainingToBlock) {
-                        const part = tail.subarray(0, remainingToBlock)
-                        tail = tail.subarray(remainingToBlock)
-                        yield part
+                        yield yieldTailSplit(tail)
                         // readableDone не выставляем, чтобы отправить tail на следующую ноду
                     } else {
                         yield tail
@@ -129,26 +127,27 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
 
                 const bHash = blockHash({
                     file,
-                    idx: blockIdx,
+                    idx: blockIdx
                 })
                 const node = nodeFinder(bHash)
-                if (node !== self) {
-                    await pipeline(
-                        chunksToBlock,
-                        sendBlock(bHash, node.url, 0) // todo: calculate real size (really hard)
-                    )
-                } else {
+                const selfSave = node === self
+                if (selfSave) {
                     await pipeline(
                         chunksToBlock,
                         saveBlock(resolveBlockPath(blockPath, bHash)),
                     )
+                } else {
+                    // последний блок может быть неполным
+                    const thisBlockSize = blockIdx === bc - 1 ? blockSizeBytes : file.size % blockSizeBytes
+                    await pipeline(
+                        chunksToBlock,
+                        saveRemoteBlock(bHash, node.url, thisBlockSize === 0 ? blockSizeBytes : thisBlockSize)
+                    )
                 }
-
                 if (readableDone) {
                     break
                 }
                 console.log('sent block', blockIdx)
-                blockIdx++
             }
         }
     )
