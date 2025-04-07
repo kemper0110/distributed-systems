@@ -1,11 +1,12 @@
-import {IncomingMessage, ServerResponse} from "node:http";
+import http, {IncomingMessage, ServerResponse} from "node:http";
 import {blockCount, blockHash, fileFromKey, resolveBlockPath} from "../models/file";
 import {makeNodeFinder, Node} from "../models/node";
 import {pipeline} from "node:stream/promises";
 import {Range, RangeError, rangeParser} from "../range-parser";
-import fs from "fs";
 import {acceptRanges} from "./utils";
 import {readBlock} from "./getBlock";
+import {BlockNotFoundError} from "../BlockNotFoundError";
+import {agent} from "./agent";
 
 type BlockRangeStreamInfo = {
     blockStart: number
@@ -30,8 +31,6 @@ function getRangeInfo(byteRange: Range, blockSizeBytes: number): BlockRangeStrea
 }
 
 export async function getFile(request: IncomingMessage, response: ServerResponse, fileKey: string, nodes: Node[], self: Node, blockPath: string, method: 'GET' | 'HEAD') {
-    const acc = '"' + request.headers.accept?.substring(0, 9) + ' ' + request.headers.range + '"'
-
     const file = fileFromKey(fileKey)
     const {mimeType, size, blockSize} = file
 
@@ -48,7 +47,6 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
         blockEnd: bc - 1,
         skip: 0, take: 0,
     }
-    console.log(range, blockRange)
 
     if (range) {
         response.writeHead(206, {
@@ -70,19 +68,58 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
 
     const nodeFinder = makeNodeFinder(nodes)
 
-    await pipeline(
+    return await pipeline(
         async function* () {
             for (let i = blockRange.blockStart; i < blockRange.blockEnd + 1; ++i) {
                 const bHash = blockHash({file, idx: i})
-                const filePath = resolveBlockPath(blockPath, bHash)
+
+                const node = nodeFinder(bHash)
+
                 const skip = i === blockRange.blockStart && blockRange.skip > 0 ? blockRange.skip : undefined
                 const take = i === blockRange.blockEnd && blockRange.take > 0 ? blockRange.take : undefined
-                console.log(acc, i, filePath, 'skip-take', skip, take)
-                yield* readBlock(filePath, skip, take)
-                console.log('sent', i, 'block')
+
+                const selfRead = node === self
+                if(selfRead) {
+                    yield* readBlock(resolveBlockPath(blockPath, bHash), skip, take)
+                } else {
+                    yield* await readRemoteBlock(bHash, node, i, skip, take)
+                }
             }
         },
         response
     )
-    console.log('done without exception')
+}
+
+
+
+function makeRangeHeader(take?: number, skip?: number) {
+    if (take === undefined && skip === undefined)
+        return undefined
+    if(take === undefined)
+        return `bytes=${skip}-`
+    if(skip === undefined)
+        return `bytes=-${take}`
+    return `bytes=${skip}-${take}`
+}
+
+async function readRemoteBlock(bHash: string, node: Node, i: number, skip?: number, take?: number) {
+    // @ts-ignore
+    const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
+    const url = new URL("/block/" + bHash, node.url)
+    const range = makeRangeHeader(take, skip);
+
+    http.request(url, {
+        method: 'GET',
+        headers: {
+            'accept': 'application/octet-stream',
+            ...(range && {range}),
+        },
+        agent,
+    }, downstreamResponse => resolve(downstreamResponse))
+        .on("error", e => reject(e))
+        .end()
+    const downstreamResponse: IncomingMessage = await downstreamResponsePromise
+    if (downstreamResponse.statusCode === 404)
+        throw new BlockNotFoundError(node.url, i, bHash)
+    return downstreamResponse
 }

@@ -3,7 +3,7 @@ import {pipeline} from "node:stream/promises";
 import * as fs from "fs";
 import * as fsp from "fs/promises";
 import {resolveBlockPath} from "../models/file";
-import {Range, RangeError, rangeParser} from "../range-parser";
+import {RangeError, rangeParser} from "../range-parser";
 import {acceptRanges} from "./utils";
 
 export async function getBlock(request: IncomingMessage, response: ServerResponse, blockName: string, blockPath: string, method: 'GET' | 'HEAD') {
@@ -35,8 +35,7 @@ export async function getBlock(request: IncomingMessage, response: ServerRespons
     if(method === 'HEAD')
         return response.end()
 
-    await pipeline(readBlock(filePath, range?.start, range?.end), response)
-    return response.end()
+    return await pipeline(readBlock(filePath, range?.start, range?.end), response)
 }
 
 export function readBlock(filePath: string, start?: number, end?: number) {

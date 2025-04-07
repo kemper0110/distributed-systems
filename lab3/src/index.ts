@@ -5,10 +5,6 @@ import {resolveBlockPath} from "./models/file";
 
 const nodes: Node[] = [
     {
-        url: "http://localhost:3000",
-        hash: nodeHash("http://localhost:3000")
-    },
-    {
         url: "http://localhost:3001",
         hash: nodeHash("http://localhost:3001")
     },
