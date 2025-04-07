@@ -5,8 +5,6 @@ import {pipeline} from "node:stream/promises";
 import {Range, RangeError, rangeParser} from "../range-parser";
 import fs from "fs";
 import {acceptRanges} from "./utils";
-import {clearInterval, setInterval} from "node:timers";
-import {setTimeout} from "node:timers/promises";
 import {readBlock} from "./getBlock";
 
 type BlockRangeStreamInfo = {
@@ -43,7 +41,7 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
 
     const blockSizeBytes = 1024 * 1024 * blockSize
 
-    const bc = blockCount(size, blockSize)
+    const bc = blockCount(size, blockSizeBytes)
 
     const blockRange = range ? getRangeInfo(range, blockSizeBytes) : {
         blockStart: 0,
@@ -70,49 +68,21 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
     if (method === "HEAD")
         return response.end()
 
-    // const nodeFinder = makeNodeFinder(nodes)
+    const nodeFinder = makeNodeFinder(nodes)
 
-    let key;
-    try {
-        key = setInterval(() => {
-            console.log(acc, request.destroyed, request.closed, request.aborted)
-        }, 500)
-
-        let len = 0;
-        await pipeline(
-            async function* () {
-                for (let i = blockRange.blockStart; i < blockRange.blockEnd + 1; ++i) {
-                    console.log('sent', i, 'block')
-                    const bHash = blockHash({
-                        file,
-                        idx: i
-                    })
-                    // const node = nodeFinder(bHash)
-                    // if (node === self) {
-                    // } else {
-                    // }
-
-                    const stream = readBlock(resolveBlockPath(blockPath, bHash),
-                        i === 0 && blockRange.skip > 0 ? blockRange.skip : undefined,
-                        i === blockRange.blockEnd && blockRange.take > 0 ? blockRange.take : undefined
-                    )
-                    yield* stream
-                }
-            },
-            async function*(source) {
-                for await (const chunk of source) {
-                    len += chunk.length
-                    console.log(acc, `${chunk.length}/${len}`)
-                    yield chunk
-                }
-            },
-            response
-        )
-        console.log(acc, 'sent', len, 'to')
-    } catch (e) {
-        console.log('error!!!', acc, e)
-    } finally {
-        console.log(acc, 'finally!')
-        clearInterval(key)
-    }
+    await pipeline(
+        async function* () {
+            for (let i = blockRange.blockStart; i < blockRange.blockEnd + 1; ++i) {
+                const bHash = blockHash({file, idx: i})
+                const filePath = resolveBlockPath(blockPath, bHash)
+                const skip = i === blockRange.blockStart && blockRange.skip > 0 ? blockRange.skip : undefined
+                const take = i === blockRange.blockEnd && blockRange.take > 0 ? blockRange.take : undefined
+                console.log(acc, i, filePath, 'skip-take', skip, take)
+                yield* readBlock(filePath, skip, take)
+                console.log('sent', i, 'block')
+            }
+        },
+        response
+    )
+    console.log('done without exception')
 }
