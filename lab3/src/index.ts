@@ -14,7 +14,7 @@ const nodes: Node[] = [
 ]
 const self = nodes[0]
 
-const blockPath = "./blocks"
+const blockPath = process.env.BLOCKS_PATH || "./blocks"
 
 fs.mkdirSync(blockPath, {recursive: true})
 
