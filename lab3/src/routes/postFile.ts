@@ -4,7 +4,6 @@ import {z} from "zod";
 import {blockCount, blockHash, File, fileKey, resolveBlockPath} from "../models/file";
 import {makeNodeFinder, Node} from "../models/node";
 import * as http from "node:http";
-import fs from "fs";
 import {saveBlock} from "./postBlock";
 import {agent} from "./agent";
 import {Readable} from "node:stream";
@@ -76,7 +75,6 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
         async function sender(source) {
             let tail: Buffer | undefined
             for (let blockIdx = 0; blockIdx < bc; ++blockIdx) {
-                console.log('sending block', blockIdx)
 
                 let readableDone = false
                 async function* chunksToBlock() {
@@ -100,7 +98,6 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                         // @ts-ignore
                         const {value, done} = await source.next()
                         if (done) {
-                            console.log('source done')
                             break;
                         }
                         if (value.length <= remainingToBlock) {
@@ -115,6 +112,7 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                         return;
                     }
 
+                    // @ts-ignore
                     if (tail.length > remainingToBlock) {
                         yield yieldTailSplit(tail)
                         // readableDone не выставляем, чтобы отправить tail на следующую ноду
@@ -147,7 +145,6 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                 if (readableDone) {
                     break
                 }
-                console.log('sent block', blockIdx)
             }
         }
     )

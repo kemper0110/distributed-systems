@@ -15,6 +15,6 @@ export async function postBlock(request: IncomingMessage, response: ServerRespon
 
 export function saveBlock(filePath: string) {
     return fs.createWriteStream(filePath, {
-        // highWaterMark: 1024 * 1024 // todo: test big highWaterMark
+        highWaterMark: Number(process.env.LOCAL_WRITE_HWM) || undefined,
     })
 }

@@ -40,7 +40,7 @@ export async function getBlock(request: IncomingMessage, response: ServerRespons
 
 export function readBlock(filePath: string, start?: number, end?: number) {
     return fs.createReadStream(filePath, {
-        // highWaterMark: 1024 * 1024 // todo: test big highWaterMark
+        highWaterMark: Number(process.env.LOCAL_READ_HWM) || undefined,
         start,
         end,
     })

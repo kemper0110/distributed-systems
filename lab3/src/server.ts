@@ -8,7 +8,7 @@ import {postBlock} from "./routes/postBlock";
 
 export async function createServer(port: number | undefined, nodes: Node[], self: Node, blockPath: string) {
     const server = http.createServer({
-        // highWaterMark: 1024 * 1024, // todo: test big highWaterMark
+        highWaterMark: Number(process.env.SERVER_HWM) || undefined
     }, async (request, response) => {
         try {
             const url = new URL(request.url!, `http://0.0.0.0:${port ?? 80}`)
@@ -46,8 +46,9 @@ export async function createServer(port: number | undefined, nodes: Node[], self
             response.writeHead(404).end()
         } catch (e) {
             const acc = request.headers.accept
+            // @ts-ignore
             if(e?.code === 'ERR_STREAM_PREMATURE_CLOSE') {
-                console.log(acc?.substring(0, 15), 'premature close')
+                console.log(acc?.substring(0, 7), 'premature close')
             }
             if (response.headersSent) {
                 response.end()

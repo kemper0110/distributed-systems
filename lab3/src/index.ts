@@ -1,7 +1,10 @@
 import {createServer} from "./server";
 import {Node, nodeHash} from "./models/node";
 import * as fs from "fs";
-import {resolveBlockPath} from "./models/file";
+
+process.env.SERVER_HWM = String(8 * 1024 * 1024) // прироста чтения не дает
+process.env.LOCAL_READ_HWM = String(8 * 1024 * 1024) // сильно ускоряет чтение (~ в 3 раза)
+process.env.LOCAL_WRITE_HWM = String(8 * 1024 * 1024) // ускоряет запись на 13% (мало)
 
 const nodes: Node[] = [
     {

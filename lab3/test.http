@@ -9,7 +9,7 @@ GET http://localhost:3000/block/stream
 
 
 ###
-POST http://localhost:3000/file/stream?blockSize=1
+POST http://localhost:3000/file/stream2?blockSize=1
 Content-Type: video/mp4
 
 < ./videos/stream.mp4
@@ -19,4 +19,34 @@ GET http://localhost:3000/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoi
 
 ###
 GET http://localhost:3000/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic3RyZWFtIiwiYmxvY2tTaXplIjoxLCJzaXplIjoxMjEyNzA4MSwibWltZVR5cGUiOiJ2aWRlby9tcDQifQ.W_gvVOvk89jo1tiJ9uEvMYmHssemcPn0b-lA-XHI6IM
-Range: bytes=1393216-6000000
+Range: bytes=0-
+
+###
+GET http://localhost:3000/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic3RyZWFtMiIsImJsb2NrU2l6ZSI6MSwic2l6ZSI6MTIxMjcwODEsIm1pbWVUeXBlIjoidmlkZW8vbXA0In0.jsW1nZrzxiul-ATdbjHn5UvMwwpNpHyeWhiTTZHr9T8
+Range: bytes=0-
+
+
+### AVATAAAAAR
+
+### 1.04 GB = 22s
+POST http://localhost:3000/file/avatar1?blockSize=32
+Content-Type: video/mp4
+
+< ./videos/avatar.mp4
+
+### 354 MB/s = 1064MB/3s
+GET http://localhost:3000/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYXZhdGFyLm1wNCIsImJsb2NrU2l6ZSI6MSwic2l6ZSI6MTEyMjk4NDkyNywibWltZVR5cGUiOiJhcHBsaWNhdGlvbi94LXd3dy1mb3JtLXVybGVuY29kZWQifQ.IN74O_oQIDI3KcPSbgQH5U1Uxcp2uXiY8KIyGR4uVbE
+Range: bytes=0-
+
+
+### AVATAAAAAR as block
+
+### 1064 MB = 12s = 88MB/s
+POST http://localhost:3000/block/avatar2
+Content-Type: application/octet-stream
+
+< ./videos/avatar.mp4
+
+### 1.159ms = 918MB/s
+GET http://localhost:3000/block/avatar
+Range: bytes=0-
