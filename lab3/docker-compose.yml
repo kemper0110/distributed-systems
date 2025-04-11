@@ -1,22 +1,77 @@
 services:
-  data-node:
-    scale: 4
+  data-node-1:
     image: node:23-alpine
     working_dir: /usr/app
     labels:
       lab3-container: data-node
-    ports: ["3000"]
+    ports: [ "3001:3000", "9229:9229" ]
     volumes:
-      - type: volume
+      - type: bind
+        source: ./data-node-1-blocks
         target: /usr/blocks
       - type: bind
         source: .
         target: /usr/app
         read_only: true
-    command: ['npm', 'start']
-    environment:
-      NODE_ENV: production
-      BLOCKS_PATH: /usr/blocks
-      PORT: 3000
+    command: [ 'npm', 'start' ]
+    env_file: [ docker.env ]
+    environment: [ "SELF=http://host.docker.internal:3001" ]
+    mem_limit: 256M
+    cpus: 1.0
+  data-node-2:
+    image: node:23-alpine
+    working_dir: /usr/app
+    labels:
+      lab3-container: data-node
+    ports: [ "3002:3000" ]
+    volumes:
+      - type: bind
+        source: ./data-node-2-blocks
+        target: /usr/blocks
+      - type: bind
+        source: .
+        target: /usr/app
+        read_only: true
+    command: [ 'npm', 'start' ]
+    env_file: [ docker.env ]
+    environment: [ "SELF=http://host.docker.internal:3002" ]
+    mem_limit: 256M
+    cpus: 1.0
+  data-node-3:
+    image: node:23-alpine
+    working_dir: /usr/app
+    labels:
+      lab3-container: data-node
+    ports: [ "3003:3000" ]
+    volumes:
+      - type: bind
+        source: ./data-node-3-blocks
+        target: /usr/blocks
+      - type: bind
+        source: .
+        target: /usr/app
+        read_only: true
+    command: [ 'npm', 'start' ]
+    env_file: [ docker.env ]
+    environment: [ "SELF=http://host.docker.internal:3003" ]
+    mem_limit: 256M
+    cpus: 1.0
+  data-node-4:
+    image: node:23-alpine
+    working_dir: /usr/app
+    labels:
+      lab3-container: data-node
+    ports: [ "3004:3000" ]
+    volumes:
+      - type: bind
+        source: ./data-node-4-blocks
+        target: /usr/blocks
+      - type: bind
+        source: .
+        target: /usr/app
+        read_only: true
+    command: [ 'npm', 'start' ]
+    env_file: [ docker.env ]
+    environment: [ "SELF=http://host.docker.internal:3004" ]
     mem_limit: 256M
     cpus: 1.0

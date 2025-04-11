@@ -7,6 +7,7 @@ import * as http from "node:http";
 import {saveBlock} from "./postBlock";
 import {agent} from "./agent";
 import {Readable} from "node:stream";
+import {AppConfig} from "../app";
 
 const postFileQueryParams = z.object({
     blockSize: z.coerce.number().int().gt(0).optional().default(1),
@@ -17,7 +18,8 @@ function saveRemoteBlock(blockHash: string, nodeUrl: string, size: number) {
         // @ts-ignore
         const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
 
-        const url = new URL("/file/" + blockHash, nodeUrl)
+        const url = new URL("/block/" + blockHash, nodeUrl)
+        console.log('request', url.toString())
         const downstreamRequest = http.request(url, {
             method: "POST",
             headers: {
@@ -28,28 +30,28 @@ function saveRemoteBlock(blockHash: string, nodeUrl: string, size: number) {
         }, downstreamResponse => resolve(downstreamResponse))
             .on("error", e => reject(e))
 
-        const downstreamResponse: IncomingMessage = await downstreamResponsePromise
-        if (downstreamResponse.statusCode !== 200)
-            throw new Error(`Downstream response status code is not 200`)
-
         let count = 0;
         await pipeline(
             source,
             async function* counter(source) {
                 for await (const chunk of source) {
                     count += chunk.length
-                    console.log(`${chunk.length}/${count}`)
+                    // console.log(`${chunk.length}/${count}`)
                     yield chunk
                 }
             },
             downstreamRequest
         )
         console.log('sent', count, 'to', url.toString())
+
+        const downstreamResponse: IncomingMessage = await downstreamResponsePromise
+        if (downstreamResponse.statusCode !== 200)
+            throw new Error(`Downstream response status code is not 200`)
     }
 }
 
 
-export async function postFile(request: IncomingMessage, response: ServerResponse, query: Record<string, string>, nodes: Node[], self: Node, blockPath: string, fileName: string) {
+export async function postFile(request: IncomingMessage, response: ServerResponse, query: Record<string, string>, fileName: string, config: AppConfig) {
     const {blockSize} = postFileQueryParams.parse(query)
 
     const cl = request.headers["content-length"]
@@ -66,7 +68,7 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
     const key = fileKey(file)
     const blockSizeBytes = 1024 * 1024 * blockSize
     const bc = blockCount(file.size, blockSizeBytes)
-    const nodeFinder = makeNodeFinder(nodes)
+    const nodeFinder = makeNodeFinder(config.nodes)
 
     console.log('file', file, 'filekey', key)
     await pipeline(
@@ -75,7 +77,7 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
         async function sender(source) {
             let tail: Buffer | undefined
             for (let blockIdx = 0; blockIdx < bc; ++blockIdx) {
-
+                console.log('sending block', blockIdx)
                 let readableDone = false
                 async function* chunksToBlock() {
                     let remainingToBlock = blockSizeBytes
@@ -128,20 +130,25 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                     idx: blockIdx
                 })
                 const node = nodeFinder(bHash)
-                const selfSave = node === self
+                const selfSave = node === config.selfNode
                 if (selfSave) {
+                    console.log('self save')
                     await pipeline(
                         chunksToBlock,
-                        saveBlock(resolveBlockPath(blockPath, bHash)),
+                        saveBlock(config, resolveBlockPath(config.blockPath, bHash)),
                     )
                 } else {
+                    console.log('remote save', node.url)
                     // последний блок может быть неполным
-                    const thisBlockSize = blockIdx === bc - 1 ? blockSizeBytes : file.size % blockSizeBytes
+                    const thisBlockSize = blockIdx !== bc - 1 ? blockSizeBytes : file.size % blockSizeBytes
+                    // problem-solving improved (а тесты не падали из-за чётного размера)
+                    // const thisBlockSize = blockIdx === bc - 1 ? blockSizeBytes : file.size % blockSizeBytes
                     await pipeline(
                         chunksToBlock,
                         saveRemoteBlock(bHash, node.url, thisBlockSize === 0 ? blockSizeBytes : thisBlockSize)
                     )
                 }
+                console.log('sent block', blockIdx)
                 if (readableDone) {
                     break
                 }
@@ -149,6 +156,7 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
         }
     )
 
+    console.log('request finished')
     response.writeHead(200).end(key)
 }
 

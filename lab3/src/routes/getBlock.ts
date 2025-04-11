@@ -5,9 +5,10 @@ import * as fsp from "fs/promises";
 import {resolveBlockPath} from "../models/file";
 import {RangeError, rangeParser} from "../range-parser";
 import {acceptRanges} from "./utils";
+import {AppConfig} from "../app";
 
-export async function getBlock(request: IncomingMessage, response: ServerResponse, blockName: string, blockPath: string, method: 'GET' | 'HEAD') {
-    const filePath = resolveBlockPath(blockPath, blockName)
+export async function getBlock(request: IncomingMessage, response: ServerResponse, blockName: string, method: "GET" | "HEAD", config: AppConfig) {
+    const filePath = resolveBlockPath(config.blockPath, blockName)
     const stats = await fsp.stat(filePath).catch<Error>(e => e);
     if (stats instanceof Error) {
         return response.writeHead(404).end();
@@ -35,12 +36,12 @@ export async function getBlock(request: IncomingMessage, response: ServerRespons
     if(method === 'HEAD')
         return response.end()
 
-    return await pipeline(readBlock(filePath, range?.start, range?.end), response)
+    return await pipeline(readBlock(config, filePath, range?.start, range?.end), response)
 }
 
-export function readBlock(filePath: string, start?: number, end?: number) {
+export function readBlock(config: AppConfig, filePath: string, start?: number, end?: number) {
     return fs.createReadStream(filePath, {
-        highWaterMark: Number(process.env.LOCAL_READ_HWM) || undefined,
+        highWaterMark: config.hwm?.localRead,
         start,
         end,
     })

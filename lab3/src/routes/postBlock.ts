@@ -3,18 +3,19 @@ import fsp from "fs/promises";
 import {pipeline} from "node:stream/promises";
 import fs from "fs";
 import {resolveBlockPath} from "../models/file";
+import {AppConfig} from "../app";
 
-export async function postBlock(request: IncomingMessage, response: ServerResponse, blockName: string, blockPath: string) {
-    const filePath = resolveBlockPath(blockPath, blockName)
+export async function postBlock(request: IncomingMessage, response: ServerResponse, blockName: string, config: AppConfig) {
+    const filePath = resolveBlockPath(config.blockPath, blockName)
     const stats = await fsp.stat(filePath).catch<Error>(e => e);
     if (!(stats instanceof Error))
         return response.writeHead(409).end();
-    await pipeline(request, saveBlock(filePath))
+    await pipeline(request, saveBlock(config, filePath))
     return response.writeHead(200).end()
 }
 
-export function saveBlock(filePath: string) {
+export function saveBlock(config: AppConfig, filePath: string) {
     return fs.createWriteStream(filePath, {
-        highWaterMark: Number(process.env.LOCAL_WRITE_HWM) || undefined,
+        highWaterMark: config.hwm?.localWrite,
     })
 }

@@ -7,6 +7,7 @@ import {acceptRanges} from "./utils";
 import {readBlock} from "./getBlock";
 import {BlockNotFoundError} from "../BlockNotFoundError";
 import {agent} from "./agent";
+import {AppConfig} from "../app";
 
 type BlockRangeStreamInfo = {
     blockStart: number
@@ -30,7 +31,7 @@ function getRangeInfo(byteRange: Range, blockSizeBytes: number): BlockRangeStrea
     }
 }
 
-export async function getFile(request: IncomingMessage, response: ServerResponse, fileKey: string, nodes: Node[], self: Node, blockPath: string, method: 'GET' | 'HEAD') {
+export async function getFile(request: IncomingMessage, response: ServerResponse, fileKey: string, method: "GET" | "HEAD", config: AppConfig) {
     const file = fileFromKey(fileKey)
     const {mimeType, size, blockSize} = file
 
@@ -66,7 +67,7 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
     if (method === "HEAD")
         return response.end()
 
-    const nodeFinder = makeNodeFinder(nodes)
+    const nodeFinder = makeNodeFinder(config.nodes)
 
     return await pipeline(
         async function* () {
@@ -78,9 +79,9 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
                 const skip = i === blockRange.blockStart && blockRange.skip > 0 ? blockRange.skip : undefined
                 const take = i === blockRange.blockEnd && blockRange.take > 0 ? blockRange.take : undefined
 
-                const selfRead = node === self
+                const selfRead = node === config.selfNode
                 if(selfRead) {
-                    yield* readBlock(resolveBlockPath(blockPath, bHash), skip, take)
+                    yield* readBlock(config, resolveBlockPath(config.blockPath, bHash), skip, take)
                 } else {
                     yield* await readRemoteBlock(bHash, node, i, skip, take)
                 }
@@ -98,7 +99,7 @@ function makeRangeHeader(take?: number, skip?: number) {
     if(take === undefined)
         return `bytes=${skip}-`
     if(skip === undefined)
-        return `bytes=-${take}`
+        return `bytes=0-${take}` // отличается лишь одним байтом от `-${take}`
     return `bytes=${skip}-${take}`
 }
 

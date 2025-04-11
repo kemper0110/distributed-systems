@@ -9,7 +9,7 @@ GET http://localhost:3000/block/stream
 
 
 ###
-POST http://localhost:3000/file/stream2?blockSize=1
+POST http://localhost:3001/file/stream2?blockSize=1
 Content-Type: video/mp4
 
 < ./videos/stream.mp4
@@ -29,24 +29,41 @@ Range: bytes=0-
 ### AVATAAAAAR
 
 ### 1.04 GB = 22s
-POST http://localhost:3000/file/avatar1?blockSize=32
+POST http://localhost:3001/file/avatar1?blockSize=32
 Content-Type: video/mp4
 
 < ./videos/avatar.mp4
 
 ### 354 MB/s = 1064MB/3s
-GET http://localhost:3000/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYXZhdGFyLm1wNCIsImJsb2NrU2l6ZSI6MSwic2l6ZSI6MTEyMjk4NDkyNywibWltZVR5cGUiOiJhcHBsaWNhdGlvbi94LXd3dy1mb3JtLXVybGVuY29kZWQifQ.IN74O_oQIDI3KcPSbgQH5U1Uxcp2uXiY8KIyGR4uVbE
+GET http://localhost:3001/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYXZhdGFyMSIsImJsb2NrU2l6ZSI6MzIsInNpemUiOjExMjI5ODQ5MjcsIm1pbWVUeXBlIjoidmlkZW8vbXA0In0.sXYU5t9Y4B_4yYevcJpcUEI7dwAVVfcbOUVbtDZut0g
 Range: bytes=0-
+
+
+
+
+### costa rica
+
+### 1.04 GB = 22s
+POST http://localhost:3001/file/costa-rica?blockSize=4
+Content-Type: video/mp4
+
+< ./videos/costa-rica.mp4
+
+### 354 MB/s = 1064MB/3s
+GET http://localhost:3001/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY29zdGEtcmljYSIsImJsb2NrU2l6ZSI6NCwic2l6ZSI6MTA1NTQ1NzcxLCJtaW1lVHlwZSI6InZpZGVvL21wNCJ9.xnJV6G85wSu7TN_X_mO6RuRO_QCJQ2Hbn2yUGo9Xr7w
+Range: bytes=0-
+
+
 
 
 ### AVATAAAAAR as block
 
 ### 1064 MB = 12s = 88MB/s
-POST http://localhost:3000/block/avatar2
+POST http://localhost:3001/block/cr.mp4
 Content-Type: application/octet-stream
 
-< ./videos/avatar.mp4
+< ./videos/costa-rica.mp4
 
 ### 1.159ms = 918MB/s
-GET http://localhost:3000/block/avatar
+GET http://localhost:3001/block/cr.mp4
 Range: bytes=0-
