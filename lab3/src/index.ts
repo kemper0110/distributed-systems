@@ -1,12 +1,12 @@
 import {AppConfig, createApp} from "./app";
-import {Node, nodeHash} from "./models/node";
+import {Node, computeNodeHash} from "./models/node";
 
 const PORT = Number(process.env.PORT) || 3000
 
 const nodes: Node[] = Object.keys(process.env)
     .filter(k => k.startsWith('DATANODE_'))
     .map(k => process.env[k]!)
-    .map(url => ({url, hash: nodeHash(url)}))
+    .map(url => ({url, hash: computeNodeHash(url)}))
 
 const self = nodes.find(n => n.url === process.env.SELF)!
 

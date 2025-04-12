@@ -1,13 +1,13 @@
 import {expect, test} from "vitest";
-import {makeNodeFinder, Node, nodeHash, sortNodes} from "../models/node";
+import {makeNodeFinder, Node, computeNodeHash, sortNodes} from "../models/node";
 
 
-test('node hash', () => {
-    expect(nodeHash('http://data-node-1:3000'))
+test('computeNodeHash', () => {
+    expect(computeNodeHash('http://data-node-1:3000'))
         .toBe('2a98bfa3a92ba2596a77fba70ad5d159dc6160e5')
-    expect(nodeHash('http://data-node-2:3000'))
+    expect(computeNodeHash('http://data-node-2:3000'))
         .toBe('183e43def597b080852a4a2689eacdbc43fd1c36')
-    expect(nodeHash('http://data-node-3:3000'))
+    expect(computeNodeHash('http://data-node-3:3000'))
         .toBe('17b61ecd682717e919f1fa10def86020646a17cf')
 })
 
@@ -26,7 +26,7 @@ const nodes: Node[] = [
     }
 ]
 
-test('sort', () => {
+test('sortNodes', () => {
     const shuffledNodes = [...nodes].sort(() => Math.random() - 0.5)
     const sortedNodes = sortNodes(shuffledNodes)
     expect(sortedNodes).toEqual(nodes)

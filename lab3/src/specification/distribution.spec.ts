@@ -1,15 +1,15 @@
 import {test} from "vitest";
-import {makeNodeFinder, Node, nodeHash} from "../models/node";
-import {blockCount, blockHash, File} from "../models/file";
+import {makeNodeFinder, Node, computeNodeHash} from "../models/node";
+import {calculateBlockCount, computeBlockHash, File} from "../models/file";
 import fs from "fs";
 
 test('distribution test', () => {
     const nodes = Array.from({length: 1000}, (_, i) => ({
         url: `http://localhost:${i}`,
-        hash: nodeHash(`http://localhost:${i}`)
+        hash: computeNodeHash(`http://localhost:${i}`)
     } as Node))
 
-    fs.writeFileSync('src/specification/nodes-data.js', 'window.data=' + JSON.stringify(nodes.map(n => n.hash)), 'utf8')
+    fs.writeFileSync('src/specification/demo/nodes-distribution/data.js', 'window.data=' + JSON.stringify(nodes.map(n => n.hash)), 'utf8')
 
     const blocks = nodes.map(() => new Set())
 
@@ -22,10 +22,10 @@ test('distribution test', () => {
         blockSize: 16
     }
 
-    const bc = blockCount(file.size, file.blockSize) // 65_536
+    const bc = calculateBlockCount(file.size, file.blockSize) // 65_536
     console.log('block count', bc)
     for (let i = 0; i < bc; ++i) {
-        const bHash = blockHash({file, idx: i})
+        const bHash = computeBlockHash({file, idx: i})
         const node = nodeFinder(bHash)
         const nodeBlocks = blocks[nodes.indexOf(node)]
         if (nodeBlocks.has(bHash))
@@ -35,7 +35,7 @@ test('distribution test', () => {
 
     const counts = blocks.map(b => b.size)
 
-    fs.writeFileSync('src/specification/blocks-data.js', 'window.data=' + JSON.stringify(counts), 'utf8')
+    fs.writeFileSync('src/specification/demo/blocks-distribution/data.js', 'window.data=' + JSON.stringify(counts), 'utf8')
 
     counts.sort((a, b) => a - b)
 

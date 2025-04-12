@@ -1,5 +1,11 @@
 import http, {IncomingMessage, ServerResponse} from "node:http";
-import {blockCount, blockHash, fileFromKey, resolveBlockPath} from "../models/file";
+import {
+    calculateBlockCount,
+    calculateBlockSizeBytes,
+    computeBlockHash,
+    decodeFileKey,
+    resolveBlockPath
+} from "../models/file";
 import {makeNodeFinder, Node} from "../models/node";
 import {pipeline} from "node:stream/promises";
 import {Range, RangeError, rangeParser} from "../range-parser";
@@ -32,20 +38,18 @@ function getRangeInfo(byteRange: Range, blockSizeBytes: number): BlockRangeStrea
 }
 
 export async function getFile(request: IncomingMessage, response: ServerResponse, fileKey: string, method: "GET" | "HEAD", config: AppConfig) {
-    const file = fileFromKey(fileKey)
+    const file = decodeFileKey(fileKey)
     const {mimeType, size, blockSize} = file
 
     const range = rangeParser(request.headers.range ?? '', size)
     if (range === RangeError.ResultInvalid || range === RangeError.ResultUnsatisfiable)
         return response.writeHead(416, {...acceptRanges}).end()
 
-    const blockSizeBytes = 1024 * 1024 * blockSize
-
-    const bc = blockCount(size, blockSizeBytes)
-
+    const blockSizeBytes = calculateBlockSizeBytes(blockSize)
+    const blockCount = calculateBlockCount(size, blockSizeBytes)
     const blockRange = range ? getRangeInfo(range, blockSizeBytes) : {
         blockStart: 0,
-        blockEnd: bc - 1,
+        blockEnd: blockCount - 1,
         skip: 0, take: 0,
     }
 
@@ -72,8 +76,7 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
     return await pipeline(
         async function* () {
             for (let i = blockRange.blockStart; i < blockRange.blockEnd + 1; ++i) {
-                const bHash = blockHash({file, idx: i})
-
+                const bHash = computeBlockHash({file, idx: i})
                 const node = nodeFinder(bHash)
 
                 const skip = i === blockRange.blockStart && blockRange.skip > 0 ? blockRange.skip : undefined

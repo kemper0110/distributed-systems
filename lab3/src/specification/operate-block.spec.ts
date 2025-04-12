@@ -1,20 +1,22 @@
-import {describe, expect, test} from "vitest";
+import {expect, test} from "vitest";
 import {createApp} from "../app";
-import {Node, nodeHash} from "../models/node";
+import {Node, computeNodeHash} from "../models/node";
 import fs from "fs";
-import {generateBlockPath} from "./utils";
+import {asyncRandomFill, generateBlockPath} from "./utils";
 
 
-test('post block + read block', {timeout: 3_000_000}, async (ctx) => {
+test('post block + read block', async (ctx) => {
     const port = 53300
     const url = `http://localhost:${port}`
     const node: Node = {
         url: url,
-        hash: nodeHash(url)
+        hash: computeNodeHash(url)
     }
 
     const blockPath = generateBlockPath(ctx.task.id)
-    const block1 = Buffer.from(Array.from({length: 128}, (_, i) => i))
+
+    const block1 = Buffer.alloc(1024 * 1024 + 423) // 1 MB + 423 bytes
+    await asyncRandomFill(block1)
 
     await createApp({
         port,
@@ -25,19 +27,15 @@ test('post block + read block', {timeout: 3_000_000}, async (ctx) => {
 
     const block1Path = `${url}/block/block1`
 
-    describe('post block', async () => {
-        const postResponse = await fetch(block1Path, {
-            method: 'POST',
-            body: block1
-        })
-        expect(postResponse.status).toBe(200)
+    const postResponse = await fetch(block1Path, {
+        method: 'POST',
+        body: block1
     })
+    expect(postResponse.status).toBe(200)
 
-    describe('read block', async () => {
-        const getResponse = await fetch(block1Path)
-        expect(getResponse.status).toBe(200)
-        expect(await getResponse.arrayBuffer()).toEqual(block1.buffer)
-    })
+    const getResponse = await fetch(block1Path)
+    expect(getResponse.status).toBe(200)
+    expect(await getResponse.arrayBuffer()).toEqual(block1.buffer)
 
     fs.rmSync(blockPath, {recursive: true})
 })

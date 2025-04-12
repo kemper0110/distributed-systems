@@ -23,6 +23,6 @@ export function findNodeByHash(nodes: Node[], targetHash: string): Node {
     return nodes.find(node => node.hash >= targetHash) || nodes[0]
 }
 
-export function nodeHash(nodeUrl: string): string {
+export function computeNodeHash(nodeUrl: string): string {
     return crypto.createHash('sha1').update(nodeUrl).digest('hex')
 }
