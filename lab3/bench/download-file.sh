@@ -1,1 +1,1 @@
-curl -w "@curl-format.txt" -o avatar.mp4 http://localhost:3000/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYXZhdGFyLm1wNCIsImJsb2NrU2l6ZSI6MSwic2l6ZSI6MTEyMjk4NDkyNywibWltZVR5cGUiOiJhcHBsaWNhdGlvbi94LXd3dy1mb3JtLXVybGVuY29kZWQifQ.IN74O_oQIDI3KcPSbgQH5U1Uxcp2uXiY8KIyGR4uVbE
+curl -w "@curl-format.txt" -o avatar.mp4 http://localhost:3001/file/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYXZhdGFyLm1wNCIsImJsb2NrU2l6ZSI6MzIsInNpemUiOjExMjI5ODQ5MjcsIm1pbWVUeXBlIjoidmlkZW8vbXA0In0.v4lh-6IcoCkdiOFK2oh10U1xC8Hc712fmrduHX49meY
