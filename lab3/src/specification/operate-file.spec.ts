@@ -29,7 +29,7 @@ describe('post file + read file', {timeout: 3_000_000}, async (ctx) => {
     expect(file1.length).toBe(2 * 1024 * 1024)
 
     test('post file', async () => {
-        const postResponse = await fetch(`${requestNode.url}/file/file1` + '?' + new URLSearchParams({blockSize: '1'}), {
+        const postResponse = await fetch(`${requestNode.url}/file/file1?blockSize=1`, {
             method: 'POST',
             body: file1
         })

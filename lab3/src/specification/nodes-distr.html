@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nodes distribution</title>
+    <script type="text/javascript" src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.0/Recharts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.13/dayjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/5.23.3/antd.min.js"></script>
+    <script src="nodes-data.js"></script>
+</head>
+<body style="padding: 0; margin: 0">
+<div id="root" style="width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center"></div>
+<script type="text/babel">
+    const {LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+        Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+    } = Recharts;
+    const {Slider, InputNumber, Checkbox} = antd;
+    const {useState, useMemo} = React;
+
+    function getSha1Distribution(hashes, bucketCount = 16) {
+        const bins = Array(bucketCount).fill(0);
+
+        for (const hash of hashes) {
+            const hex = hash.slice(0, 2); // первые 2 символа
+            const value = parseInt(hex, 16); // 0–255
+            const bucket = Math.floor((value / 256) * bucketCount);
+            bins[bucket]++;
+        }
+
+        return bins.map((count, i) => ({
+            range: `${Math.floor(i * 256 / bucketCount).toString(16).padStart(2, '0')}–${Math.floor((i + 1) * 256 / bucketCount - 1).toString(16).padStart(2, '0')}`,
+            count,
+        }));
+    }
+
+    const App = () => {
+        const [value, setValue] = useState(16)
+        const data = useMemo(() => getSha1Distribution(window.data, value), [value])
+        return (
+            <ResponsiveContainer width="90%" height="90%">
+                <div>
+                    <Slider step={1} min={4} max={255} value={value} onChange={setValue}/>
+                    <InputNumber
+                        min={4}
+                        max={255}
+                        value={value}
+                        onChange={v => setValue(v)}
+                    />
+                </div>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="range" />
+                    <PolarRadiusAxis />
+                    <Radar name="SHA1" dataKey="count" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                    <Tooltip />
+                    <Legend />
+                </RadarChart>
+            </ResponsiveContainer>
+        );
+    };
+    ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>
