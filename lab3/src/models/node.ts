@@ -5,13 +5,12 @@ export type Node = {
     hash: string
 }
 
-export function sortNodes(nodes: Node[]): Node[] {
-    return [...nodes].sort((a, b) => a.hash.localeCompare(b.hash))
+export function computeNodeHash(nodeUrl: string): string {
+    return crypto.createHash('sha1').update(nodeUrl).digest('hex')
 }
 
-export function makeNodeFinder(nodes: Node[]) {
-    const sortedNodes = sortNodes(nodes)
-    return (targetHash: string) => findNodeByHash(sortedNodes, targetHash)
+export function sortNodes(nodes: Node[]): Node[] {
+    return [...nodes].sort((a, b) => a.hash.localeCompare(b.hash))
 }
 
 /**
@@ -23,6 +22,7 @@ export function findNodeByHash(nodes: Node[], targetHash: string): Node {
     return nodes.find(node => node.hash >= targetHash) || nodes[0]
 }
 
-export function computeNodeHash(nodeUrl: string): string {
-    return crypto.createHash('sha1').update(nodeUrl).digest('hex')
+export function makeNodeFinder(nodes: Node[]) {
+    const sortedNodes = sortNodes(nodes)
+    return (targetHash: string) => findNodeByHash(sortedNodes, targetHash)
 }
