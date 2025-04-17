@@ -1,1 +1,1 @@
-curl -s -w "@curl-format.txt" -O http://localhost:3000/block/"${BLOCK_NAME:-a1}"
+curl -s -w "@curl-format.txt" -o /dev/null http://localhost:3000/block/"${BLOCK_NAME:-a1}"

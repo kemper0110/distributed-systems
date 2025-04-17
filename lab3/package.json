@@ -5,7 +5,10 @@
   "scripts": {
     "test": "vitest --watch=false",
     "test:watch": "vitest",
-    "start": "tsx --inspect=0.0.0.0 src/index.ts"
+    "start": "tsx --env-file=.dev.env src/index.ts",
+    "start:debug": "tsx --env-file=.dev.env --inspect=0.0.0.0 src/index.ts",
+    "start1": "tsx --env-file=.dev1.env src/index.ts",
+    "start2": "tsx --env-file=.dev2.env src/index.ts"
   },
   "keywords": [],
   "author": "",

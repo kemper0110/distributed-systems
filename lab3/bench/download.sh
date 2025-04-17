@@ -1,0 +1,1 @@
+curl -X GET -w "@curl-format.txt" -o avatar.mp4 http://localhost:4444/

@@ -1,1 +1,1 @@
-curl -s -w "@curl-format.txt" -X POST --data-binary @videos/avatar.mp4 http://localhost:3000/block/"${BLOCK_NAME:-a1}"
+curl -s -w "@curl-format.txt" -X POST --data-binary @../videos/avatar.mp4 http://localhost:3000/block/"${BLOCK_NAME:-a1}"

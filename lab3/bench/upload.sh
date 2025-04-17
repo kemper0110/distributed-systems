@@ -1,0 +1,1 @@
+curl -s -w "@curl-format.txt" -X POST --data-binary @../videos/avatar.mp4 http://localhost:4444/
