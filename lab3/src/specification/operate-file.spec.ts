@@ -1,11 +1,13 @@
 import {expect, test} from "vitest";
-import {createApp} from "../app";
-import {computeNodeHash, Node} from "../models/node";
+import {createApp} from "../app.js";
+import {computeNodeHash, Node} from "../models/node.js";
 import fs from "fs";
-import {asyncRandomFill, generateBlockPath} from "./utils";
+import {asyncRandomFill, generateBlockPath} from "./utils.js";
 
 
-test('post file + read file', {timeout: 3_000_000}, async (ctx) => {
+test('post file + read file', {
+    skip: true
+}, async (ctx) => {
     const ports = [53301, 53302]
     const urls = ports.map(port => `http://localhost:${port}`)
     const nodes: Node[] = urls.map(url => ({

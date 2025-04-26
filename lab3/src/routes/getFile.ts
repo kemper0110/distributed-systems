@@ -5,15 +5,15 @@ import {
     computeBlockHash,
     decodeFileKey,
     resolveBlockPath
-} from "../models/file";
-import {makeNodeFinder, Node} from "../models/node";
+} from "../models/file.js";
+import {makeNodeFinder, Node} from "../models/node.js";
 import {pipeline} from "node:stream/promises";
-import {Range, RangeError, rangeParser} from "../range-parser";
-import {acceptRanges} from "./utils";
-import {readBlock} from "./getBlock";
-import {BlockNotFoundError} from "../BlockNotFoundError";
-import {agent} from "./agent";
-import {AppConfig} from "../app";
+import {Range, RangeError, rangeParser} from "../range-parser.js";
+import {acceptRanges} from "./utils.js";
+import {readBlock} from "./getBlock.js";
+import {BlockNotFoundError} from "../BlockNotFoundError.js";
+import {agent} from "./agent.js";
+import {AppConfig} from "../app.js";
 
 type BlockRangeStreamInfo = {
     blockStart: number

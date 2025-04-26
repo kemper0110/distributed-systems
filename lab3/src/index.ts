@@ -1,5 +1,5 @@
-import {AppConfig, createApp} from "./app";
-import {Node, computeNodeHash} from "./models/node";
+import {AppConfig, createApp} from "./app.js";
+import {Node, computeNodeHash} from "./models/node.js";
 
 const PORT = Number(process.env.PORT) || 3000
 

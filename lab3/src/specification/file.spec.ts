@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {decodeFileKey, computeBlockHash, encodeFileKey, File} from "../models/file";
+import {decodeFileKey, computeBlockHash, encodeFileKey, File} from "../models/file.js";
 
 const file1: File = {
     name: 'test.txt',

@@ -1,8 +1,8 @@
 import {expect, test} from "vitest";
-import {createApp} from "../app";
-import {Node, computeNodeHash} from "../models/node";
+import {createApp} from "../app.js";
+import {Node, computeNodeHash} from "../models/node.js";
 import fs from "fs";
-import {asyncRandomFill, generateBlockPath} from "./utils";
+import {asyncRandomFill, generateBlockPath} from "./utils.js";
 
 
 test('post block + read block', async (ctx) => {

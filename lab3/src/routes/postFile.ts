@@ -1,20 +1,20 @@
+import * as http from "node:http";
 import {IncomingMessage, ServerResponse} from "node:http";
 import {pipeline} from "node:stream/promises";
 import {z} from "zod";
 import {
     calculateBlockCount,
+    calculateBlockSizeBytes,
     computeBlockHash,
-    File,
     encodeFileKey,
-    resolveBlockPath,
-    calculateBlockSizeBytes
-} from "../models/file";
-import {makeNodeFinder} from "../models/node";
-import * as http from "node:http";
-import {saveBlock} from "./postBlock";
-import {agent} from "./agent";
-import {Readable} from "node:stream";
-import {AppConfig} from "../app";
+    File,
+    resolveBlockPath
+} from "../models/file.js";
+import {makeNodeFinder} from "../models/node.js";
+import {saveBlock} from "./postBlock.js";
+import {agent} from "./agent.js";
+import {AppConfig} from "../app.js";
+import {makeBigChunkSplitter} from "./BigChunkSplitter.js";
 
 function saveRemoteBlock(blockHash: string, nodeUrl: string, size: number) {
     return async (source: AsyncIterable<Buffer | Uint8Array>) => {
@@ -67,7 +67,7 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
     await pipeline(
         request,
         makeBigChunkSplitter(blockSizeBytes),
-        async function sender(source) {
+        async function sender(source: AsyncIterable<Buffer | Uint8Array>) {
             let tail: Buffer | undefined
             for (let blockIdx = 0; blockIdx < blockCount; ++blockIdx) {
                 console.log('sending block', blockIdx)
@@ -151,16 +151,4 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
 
     console.log('request finished')
     response.writeHead(200).end(key)
-}
-
-function makeBigChunkSplitter(blockSizeBytes: number) {
-    return async function* bigChunkSplitter(source: Readable) {
-        for await (let chunk of source) {
-            while (chunk.length > blockSizeBytes) {
-                yield chunk.subarray(0, blockSizeBytes)
-                chunk = chunk.subarray(blockSizeBytes)
-            }
-            yield chunk
-        }
-    }
 }

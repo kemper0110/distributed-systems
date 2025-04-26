@@ -2,8 +2,8 @@ import {IncomingMessage, ServerResponse} from "node:http";
 import fsp from "fs/promises";
 import {pipeline} from "node:stream/promises";
 import fs from "fs";
-import {resolveBlockPath} from "../models/file";
-import {AppConfig} from "../app";
+import {resolveBlockPath} from "../models/file.js";
+import {AppConfig} from "../app.js";
 
 export async function postBlock(request: IncomingMessage, response: ServerResponse, blockName: string, config: AppConfig) {
     const filePath = resolveBlockPath(config.blockPath, blockName)

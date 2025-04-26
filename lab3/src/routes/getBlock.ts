@@ -2,10 +2,10 @@ import {IncomingMessage, ServerResponse} from "node:http";
 import {pipeline} from "node:stream/promises";
 import * as fs from "fs";
 import * as fsp from "fs/promises";
-import {resolveBlockPath} from "../models/file";
-import {RangeError, rangeParser} from "../range-parser";
-import {acceptRanges} from "./utils";
-import {AppConfig} from "../app";
+import {resolveBlockPath} from "../models/file.js";
+import {RangeError, rangeParser} from "../range-parser.js";
+import {acceptRanges} from "./utils.js";
+import {AppConfig} from "../app.js";
 
 export async function getBlock(request: IncomingMessage, response: ServerResponse, blockName: string, method: "GET" | "HEAD", config: AppConfig) {
     const filePath = resolveBlockPath(config.blockPath, blockName)

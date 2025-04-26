@@ -1,10 +1,10 @@
 import * as http from "node:http";
 import {AddressInfo} from "node:net";
-import {getBlock} from "./routes/getBlock";
-import {getFile} from "./routes/getFile";
-import {postFile} from "./routes/postFile";
-import {Node} from "./models/node";
-import {postBlock} from "./routes/postBlock";
+import {getBlock} from "./routes/getBlock.js";
+import {getFile} from "./routes/getFile.js";
+import {postFile} from "./routes/postFile.js";
+import {Node} from "./models/node.js";
+import {postBlock} from "./routes/postBlock.js";
 import fs from "fs";
 import {IncomingMessage, ServerResponse} from "node:http";
 
