@@ -1,6 +1,6 @@
 import {test} from "vitest";
-import {makeNodeFinder, Node, computeNodeHash} from "../models/node.js";
-import {calculateBlockCount, computeBlockHash, File} from "../models/file.js";
+import {makeNodeFinder, Node, computeNodeHash} from "../src/models/node.js";
+import {calculateBlockCount, computeBlockHash, File} from "../src/models/file.js";
 import fs from "fs";
 
 test('distribution test', () => {

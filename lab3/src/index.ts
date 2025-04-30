@@ -1,4 +1,4 @@
-import {AppConfig, createApp} from "./app.js";
+import {AppConfig, createApp} from "./http/app.js";
 import {Node, computeNodeHash} from "./models/node.js";
 
 const PORT = Number(process.env.PORT) || 3000

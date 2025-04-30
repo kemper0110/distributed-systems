@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {makeNodeFinder, Node, computeNodeHash, sortNodes} from "../models/node.js";
+import {makeNodeFinder, Node, computeNodeHash, sortNodes} from "../src/models/node.js";
 
 
 test('computeNodeHash', () => {

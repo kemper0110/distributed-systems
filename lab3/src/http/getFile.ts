@@ -8,12 +8,11 @@ import {
 } from "../models/file.js";
 import {makeNodeFinder, Node} from "../models/node.js";
 import {pipeline} from "node:stream/promises";
-import {Range, RangeError, rangeParser} from "../range-parser.js";
-import {acceptRanges} from "./utils.js";
+import {acceptRanges, Range, RangeError, rangeParser} from "./range-parser.js";
 import {readBlock} from "./getBlock.js";
-import {BlockNotFoundError} from "../BlockNotFoundError.js";
+import {BlockNotFoundError} from "./BlockNotFoundError.js";
 import {agent} from "./agent.js";
-import {AppConfig} from "../app.js";
+import {AppConfig} from "./app.js";
 
 type BlockRangeStreamInfo = {
     blockStart: number

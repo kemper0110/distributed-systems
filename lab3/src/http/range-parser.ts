@@ -59,3 +59,7 @@ export function rangeParser(str: string, sizeAsBytes: number): RangeError | Rang
         end: end
     }
 }
+
+export const acceptRanges = {
+    "accept-ranges": "bytes"
+}

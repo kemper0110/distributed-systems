@@ -13,8 +13,9 @@ import {
 import {makeNodeFinder} from "../models/node.js";
 import {saveBlock} from "./postBlock.js";
 import {agent} from "./agent.js";
-import {AppConfig} from "../app.js";
-import {makeBigChunkSplitter} from "./BigChunkSplitter.js";
+import {AppConfig} from "./app.js";
+import {makeBigChunkSplitter} from "../streaming/BigChunkSplitter.js";
+import {makeChunkToBlockStreamer} from "../streaming/ChunkToBlockStreamer.js";
 
 function saveRemoteBlock(blockHash: string, nodeUrl: string, size: number) {
     return async (source: AsyncIterable<Buffer | Uint8Array>) => {
@@ -68,55 +69,10 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
         request,
         makeBigChunkSplitter(blockSizeBytes),
         async function sender(source: AsyncIterable<Buffer | Uint8Array>) {
-            let tail: Buffer | undefined
+            const {streamChunksToBlock, isReadableDone} = makeChunkToBlockStreamer(source, blockSizeBytes)
+
             for (let blockIdx = 0; blockIdx < blockCount; ++blockIdx) {
                 console.log('sending block', blockIdx)
-                let readableDone = false
-                async function* chunksToBlock() {
-                    let remainingToBlock = blockSizeBytes
-                    function yieldPart(part: Buffer) {
-                        remainingToBlock -= part.length
-                        return part
-                    }
-                    function yieldTailSplit(buf: Buffer) {
-                        const part = buf.subarray(0, remainingToBlock)
-                        tail = buf.subarray(remainingToBlock)
-                        return yieldPart(part)
-                    }
-                    if (tail) {
-                        yield yieldPart(tail)
-                        tail = undefined
-                    }
-                    while (true) {
-                        if (remainingToBlock === 0) return;
-                        if (remainingToBlock < 0) throw new TypeError('omg remaining < 0')
-                        // @ts-ignore
-                        const {value, done} = await source.next()
-                        if (done) {
-                            break;
-                        }
-                        if (value.length <= remainingToBlock) {
-                            yield yieldPart(value)
-                        } else {
-                            yield yieldTailSplit(value)
-                        }
-                    }
-
-                    if (!tail) {
-                        readableDone = true
-                        return;
-                    }
-
-                    // @ts-ignore
-                    if (tail.length > remainingToBlock) {
-                        yield yieldTailSplit(tail)
-                        // readableDone не выставляем, чтобы отправить tail на следующую ноду
-                    } else {
-                        yield tail
-                        tail = undefined
-                        readableDone = true
-                    }
-                }
 
                 const bHash = computeBlockHash({
                     file,
@@ -127,7 +83,7 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                 if (selfSave) {
                     console.log('self save')
                     await pipeline(
-                        chunksToBlock,
+                        streamChunksToBlock,
                         saveBlock(config, resolveBlockPath(config.blockPath, bHash)),
                     )
                 } else {
@@ -137,12 +93,12 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                     // problem-solving improved (а тесты не падали из-за чётного размера)
                     // const thisBlockSize = blockIdx === blockCount - 1 ? blockSizeBytes : file.size % blockSizeBytes
                     await pipeline(
-                        chunksToBlock,
+                        streamChunksToBlock,
                         saveRemoteBlock(bHash, node.url, thisBlockSize === 0 ? blockSizeBytes : thisBlockSize)
                     )
                 }
                 console.log('sent block', blockIdx)
-                if (readableDone) {
+                if (isReadableDone()) {
                     break
                 }
             }

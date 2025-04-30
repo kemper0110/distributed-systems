@@ -1,13 +1,27 @@
-import {computeNodeHash, findNodeByHash, Node} from "./node.js";
-import {computeBlockHash, File} from "./file.js";
+import crypto from "node:crypto";
+import {Node} from "../src/models/node.js";
+import {Block, File} from "../src/models/file.js";
 
-const NODE_COUNT = 50_000
-const BLOCK_COUNT = 50_000
-
+function computeNodeHash(nodeUrl: string): string {
+    return crypto.createHash('sha1').update(nodeUrl).digest('hex')
+}
+function computeBlockHash(block: Block): string {
+    const {idx, file} = block
+    const {name, size, mimeType, blockSize} = file
+    return crypto.createHash('sha1')
+        .update(`${idx} ${name} ${size} ${mimeType} ${blockSize}`)
+        .digest('hex')
+}
 
 function findNodeByHash(nodeHashes: string[], targetHash: string): number {
     return nodeHashes.findIndex(hash => hash >= targetHash) || 0
 }
+
+
+// 4.73 sec
+const NODE_COUNT = 50_000
+const BLOCK_COUNT = 50_000
+
 
 const nodes = Array.from({length: NODE_COUNT}, (_, i) => ({
     url: `http://localhost:${i}`,

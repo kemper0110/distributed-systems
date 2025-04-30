@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
-import {Node} from "../models/node";
-import {Block, File} from "../models/file";
+import {Node} from "../src/models/node.js";
+import {Block, File} from "../src/models/file.js";
 
 function computeNodeHash(nodeUrl: string): string {
     return crypto.createHash('sha1').update(nodeUrl).digest('hex')
