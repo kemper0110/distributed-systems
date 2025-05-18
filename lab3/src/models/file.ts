@@ -19,8 +19,8 @@ export function decodeFileKey(key: string): File {
     return jwt.verify(key, secretKey, {ignoreExpiration: true}) as File
 }
 
-export function resolveBlockPath(blockPath: string, blockHash: string): string {
-    return path.join(blockPath, blockHash)
+export function resolveBlockPath(blockPath: string, blockHash: bigint): string {
+    return path.join(blockPath, blockHash.toString(16))
 }
 
 export function calculateBlockCount(fileSize: number, blockSize: number): number {
@@ -34,12 +34,13 @@ export type Block = {
     file: File
 }
 
-export function computeBlockHash(block: Block): string {
+export function computeBlockHash(block: Block): bigint {
     const {idx, file} = block
     const {name, size, mimeType, blockSize} = file
-    return crypto.createHash('sha1')
+    const hex = crypto.createHash('sha1')
         .update(`${idx} ${name} ${size} ${mimeType} ${blockSize}`)
         .digest('hex')
+    return BigInt('0x' + hex)
 }
 
 export function calculateBlockSizeBytes(blockSize: number): number {

@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as fsp from "fs/promises";
 import {resolveBlockPath} from "../models/file.js";
 import {acceptRanges, RangeError, rangeParser} from "./range-parser.js";
-import {AppConfig} from "./app.js";
+import {AppConfig} from "../app.js";
 
 export async function getBlock(request: IncomingMessage, response: ServerResponse, blockName: string, method: "GET" | "HEAD", config: AppConfig) {
     const filePath = resolveBlockPath(config.blockPath, blockName)

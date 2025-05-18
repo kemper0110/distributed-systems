@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nodes connections</title>
+    <script type="text/javascript" src="https://unpkg.com/babel-standalone@6/babel.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.13/dayjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/5.23.3/antd.min.js"></script>
+    <script src="https://unpkg.com/three@0.132.2/build/three.min.js"></script>
+    <script src="https://unpkg.com/react-force-graph-2d"></script>
+</head>
+<body style="padding: 0; margin: 0">
+<div id="root" style="width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center"></div>
+<script type="text/babel">
+    const {Slider, InputNumber, Checkbox} = antd;
+    const {useState, useMemo, useRef, useEffect} = React;
+
+    const App = () => {
+        const fgRef = useRef();
+        const [data, setData] = useState({nodes: [], links: []})
+        useEffect(() => {
+            if (fgRef.current) {
+                fgRef.current.d3Force('charge').strength(-100);
+            }
+        }, []);
+
+        useEffect(() => {
+            (async () => {
+                const nodes = await fetch('http://localhost:53301/tour-du-monde').then(r => r.json())
+                const links = []
+                for(const n of nodes) {
+                    const succ = await fetch(n + '/successor').then(r => r.text())
+                    const pred = await fetch(n + '/predecessor').then(r => r.text())
+                    links.push({source: n, target: succ})
+                    links.push({source: n, target: pred})
+                }
+                setData({
+                    nodes: nodes.map(n => ({id: n, name: n})),
+                    links
+                })
+            })()
+        }, [])
+
+        return (
+            <ForceGraph2D
+                graphData={data}
+                nodeLabel="name"
+                nodeAutoColorBy="id"
+                linkDirectionalArrowLength={6}
+            />
+        );
+    };
+    ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>

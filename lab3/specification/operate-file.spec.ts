@@ -1,46 +1,65 @@
 import {expect, test} from "vitest";
-import {createApp} from "../src/http/app.js";
+import {createApp} from "../src/app.js";
 import {computeNodeHash, Node} from "../src/models/node.js";
 import fs from "fs";
 import {asyncRandomFill, generateBlockPath} from "./utils.js";
+import {setTimeout} from "node:timers/promises";
 
 
 test('post file + read file', {
-    skip: true
+    // skip: true
 }, async (ctx) => {
-    const ports = [53301, 53302]
-    const urls = ports.map(port => `http://localhost:${port}`)
-    const nodes: Node[] = urls.map(url => ({
-        url,
-        hash: computeNodeHash(url)
-    }))
-    const blockPaths = ports.map(port => generateBlockPath(ctx.task.id, port.toString()))
-
-    for (let i = 0; i < ports.length; ++i) {
-        await createApp({
-            nodes,
-            port: ports[i],
-            selfNode: nodes[i],
-            blockPath: blockPaths[i],
-        })
+    const pioneerPort = 53301
+    const pioneerUrl = `http://localhost:${pioneerPort}`
+    const pioneerNode: Node = {
+        url: pioneerUrl,
+        hash: computeNodeHash(pioneerUrl)
     }
+    const pioneerBlockPaths = generateBlockPath(ctx.task.id, pioneerPort.toString())
 
-    const requestNode = nodes[0]
+    await using pioneerApp = await createApp({
+        port: pioneerPort,
+        selfNode: pioneerNode,
+        blockPath: pioneerBlockPaths,
+        isPioneer: true,
+        stabilizeInterval: 100,
+    })
+
+    // пусть процесс немного стабилизируется
+    await setTimeout(400)
+
+    const followerPort = 53302
+    const followerUrl = `http://localhost:${followerPort}`
+    const followerNode: Node = {
+        url: followerUrl,
+        hash: computeNodeHash(followerUrl)
+    }
+    const followerBlockPaths = generateBlockPath(ctx.task.id, followerPort.toString())
+    await using followerApp = await createApp({
+        port: followerPort,
+        selfNode: followerNode,
+        blockPath: followerBlockPaths,
+        isPioneer: false,
+        mentorNode: pioneerNode,
+        stabilizeInterval: 100,
+    })
+
+    await setTimeout(1000)
 
     const file1 = Buffer.alloc(1024 * 1024 * 4 + 423) // 4 MB + 423 bytes
     await asyncRandomFill(file1)
 
-    const postResponse = await fetch(`${requestNode.url}/file/file1?blockSize=1`, {
+    const postResponse = await fetch(`${pioneerNode.url}/file/file1?blockSize=1`, {
         method: 'POST',
         body: file1
     })
     const fileKey = await postResponse.text()
     expect(postResponse.status).toBe(200)
 
-    const getResponse = await fetch(`${requestNode.url}/file/${fileKey}`)
-    const text = await getResponse.text()
-    expect(getResponse.status, text).toBe(200)
-    expect(text).toEqual(file1)
+    const getResponse = await fetch(`${pioneerNode.url}/file/${fileKey}`)
+    expect(getResponse.status).toBe(200)
+    expect(await getResponse.arrayBuffer()).toEqual(file1.buffer)
 
-    blockPaths.forEach(blockPath => fs.rmSync(blockPath, {recursive: true}))
+    fs.rmSync(pioneerBlockPaths, {recursive: true})
+    fs.rmSync(followerBlockPaths, {recursive: true})
 })

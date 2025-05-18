@@ -11,5 +11,7 @@
     <orderEntry type="library" name="babel-standalone" level="application" />
     <orderEntry type="library" name="antd" level="application" />
     <orderEntry type="library" name="dayjs" level="application" />
+    <orderEntry type="library" name="react-force-graph-2d" level="application" />
+    <orderEntry type="library" name="three" level="application" />
   </component>
 </module>

@@ -10,14 +10,15 @@ import {
     File,
     resolveBlockPath
 } from "../models/file.js";
-import {makeNodeFinder} from "../models/node.js";
 import {saveBlock} from "./postBlock.js";
 import {agent} from "./agent.js";
-import {AppConfig} from "./app.js";
+import {AppConfig, AppState} from "../app.js";
 import {makeBigChunkSplitter} from "../streaming/BigChunkSplitter.js";
 import {makeChunkToBlockStreamer} from "../streaming/ChunkToBlockStreamer.js";
+import {getSuccessor} from "./chord/getSuccessor.js";
+import {BlockNotFoundError} from "./BlockNotFoundError.js";
 
-function saveRemoteBlock(blockHash: string, nodeUrl: string, size: number) {
+function saveRemoteBlock(blockHash: bigint, nodeUrl: string, size: number) {
     return async (source: AsyncIterable<Buffer | Uint8Array>) => {
         // @ts-ignore
         const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
@@ -45,12 +46,12 @@ const postFileQueryParams = z.object({
     blockSize: z.coerce.number().int().gt(0).optional().default(1),
 })
 
-export async function postFile(request: IncomingMessage, response: ServerResponse, query: Record<string, string>, fileName: string, config: AppConfig) {
+export async function postFile(request: IncomingMessage, response: ServerResponse, query: Record<string, string>, fileName: string, config: AppConfig, state: AppState) {
     const {blockSize} = postFileQueryParams.parse(query)
 
     const cl = request.headers["content-length"]
     if (!cl)
-        return response.writeHead(400).end("Server does not support Transfer-Encoding: chunked. Please provide Content-Length.")
+        return response.writeHead(411).end("Server does not support Transfer-Encoding: chunked. Please provide Content-Length.")
 
     const file: File = {
         name: fileName,
@@ -62,7 +63,6 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
     const key = encodeFileKey(file)
     const blockSizeBytes = calculateBlockSizeBytes(blockSize)
     const blockCount = calculateBlockCount(file.size, blockSizeBytes)
-    const nodeFinder = makeNodeFinder(config.nodes)
 
     console.log('file', file, 'filekey', key)
     await pipeline(
@@ -78,8 +78,11 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                     file,
                     idx: blockIdx
                 })
-                const node = nodeFinder(bHash)
-                const selfSave = node === config.selfNode
+                const nodeUrl = await getSuccessor(bHash, config, state)
+                if(nodeUrl === undefined) {
+                    throw new BlockNotFoundError(config.selfNode.url, blockIdx, bHash)
+                }
+                const selfSave = nodeUrl === config.selfNode.url
                 if (selfSave) {
                     console.log('self save')
                     await pipeline(
@@ -87,14 +90,14 @@ export async function postFile(request: IncomingMessage, response: ServerRespons
                         saveBlock(config, resolveBlockPath(config.blockPath, bHash)),
                     )
                 } else {
-                    console.log('remote save', node.url)
+                    console.log('remote save', nodeUrl)
                     // последний блок может быть неполным
                     const thisBlockSize = blockIdx !== blockCount - 1 ? blockSizeBytes : file.size % blockSizeBytes
                     // problem-solving improved (а тесты не падали из-за чётного размера)
                     // const thisBlockSize = blockIdx === blockCount - 1 ? blockSizeBytes : file.size % blockSizeBytes
                     await pipeline(
                         streamChunksToBlock,
-                        saveRemoteBlock(bHash, node.url, thisBlockSize === 0 ? blockSizeBytes : thisBlockSize)
+                        saveRemoteBlock(bHash, nodeUrl, thisBlockSize === 0 ? blockSizeBytes : thisBlockSize)
                     )
                 }
                 console.log('sent block', blockIdx)

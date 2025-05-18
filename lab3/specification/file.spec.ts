@@ -41,13 +41,13 @@ const fileVideo: File = {
 test('fileHash', {
     // skip: true
 }, () => {
-    expect(computeBlockHash({idx: 1, file: file1})).toBe('62f7fcb7c51164e97f39d5f679d7b526e83a7869')
-    expect(computeBlockHash({idx: 2, file: file1})).toBe('752e389f61792b4e778ad731d05108da4d8607e8')
-    expect(computeBlockHash({idx: 1, file: file2})).toBe('d50a97d1881c4da198d6f6be6bb5eb5d996623d3')
-    expect(computeBlockHash({idx: 1, file: file3})).toBe('6072d1817dccf5a0017f14e25036bafc02bfa710')
-    expect(computeBlockHash({idx: 1, file: file4})).toBe('b5ce7dbf50f7f2eec5d6687e89cc03a51874b3b2')
-    expect(computeBlockHash({idx: 1, file: file5})).toBe('a8a7a4010e3f22c020075d9ce502fc5e09b0ceef')
-    expect(computeBlockHash({idx: 1, file: fileVideo})).toBe('f4d12d0bccb3bb8003ada59b4c84c8e0c97bfe19')
+    expect(computeBlockHash({idx: 1, file: file1})).toBe(565011394434449518361421450909910536467424901225n)
+    expect(computeBlockHash({idx: 2, file: file1})).toBe(668982686987994413874242129466550256224434522088n)
+    expect(computeBlockHash({idx: 1, file: file2})).toBe(1216251266892575473453820283904551295426140447699n)
+    expect(computeBlockHash({idx: 1, file: file3})).toBe(550623649483123865956705418423738653225435244304n)
+    expect(computeBlockHash({idx: 1, file: file4})).toBe(1037932237167311478430938634213830213374586434482n)
+    expect(computeBlockHash({idx: 1, file: file5})).toBe(962848960720671841203915814330581339533279809263n)
+    expect(computeBlockHash({idx: 1, file: fileVideo})).toBe(1397658527895578444721629905631863269314719907353n)
 })
 
 test('fileKey', () => {

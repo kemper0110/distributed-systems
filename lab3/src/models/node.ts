@@ -1,41 +1,67 @@
 import crypto from "node:crypto";
 
-/* [V8:inline-me-pls]
-
-    string VS uint32array VS regular js array
-    full sha1 VS 128 bit truncated sha1
-    for cycle VS unrolled
-    sha1 VS md5
-
-
-    переписать на плюсы и сравнить производительность
-    1. с хешем в виде статического массива
-    2. с индексом в виде статического массива статическим массивов
- */
-
 export type Node = {
     url: string
-    hash: string
+    hash: bigint
 }
 
-export function computeNodeHash(nodeUrl: string): string {
-    return crypto.createHash('sha1').update(nodeUrl).digest('hex')
+export function computeNodeHash(nodeUrl: string): bigint {
+    const hex = crypto.createHash('sha1').update(nodeUrl).digest('hex')
+    return BigInt('0x' + hex)
 }
 
-export function sortNodes(nodes: Node[]): Node[] {
-    return [...nodes].sort((a, b) => a.hash.localeCompare(b.hash))
+export function isResponsible(predecessorHash: bigint, nodeHash: bigint, targetHash: bigint) {
+    return inOpenClosedRingRange(predecessorHash, targetHash, nodeHash)
+}
+
+export function isMoreSuitableSuccessor(newSuccessorHash: bigint, nodeHash: bigint, successorHash: bigint) {
+    return inOpenRingRange(nodeHash, newSuccessorHash, successorHash)
+}
+
+export function isMoreSuitablePredecessor(newPredecessorHash: bigint, nodeHash: bigint, predecessorHash: bigint) {
+    return inOpenRingRange(predecessorHash, newPredecessorHash, nodeHash)
+}
+
+export function inOpenRingRange(start: bigint, target: bigint, end: bigint) {
+    if(start < end) {
+        return start < target && target < end
+    } else {
+        // Кольцевой случай
+        return target > start || target < end
+    }
+}
+
+export function inOpenClosedRingRange(start: bigint, target: bigint, end: bigint): boolean {
+    if (start < end) {
+        // Простой случай
+        return start < target && target <= end
+    } else if (start > end) {
+        // Кольцевой случай
+        return target > start || target <= end
+    } else {
+        // Единственный узел в системе — отвечает за всё
+        return true
+    }
 }
 
 /**
- * Find node by hash in sorted nodes array
- * @param nodes must be sorted by hash
- * @param targetHash hash to find
+ * Позволяет определить, что
+ * `successor(hash) = self` или
+ * `successor(hash) = self.successor`
+ * иначе undefined
  */
-export function findNodeByHash(nodes: Node[], targetHash: string): Node {
-    return nodes.find(node => node.hash >= targetHash) || nodes[0]
-}
-
-export function makeNodeFinder(nodes: Node[]) {
-    const sortedNodes = sortNodes(nodes)
-    return (targetHash: string) => findNodeByHash(sortedNodes, targetHash)
+export function getLocalSuccessor(predecessor: Node | null, self: Node, successor: Node, hash: bigint) {
+    if (predecessor) {
+        if(isResponsible(predecessor.hash, self.hash, hash))
+            return self
+    } else {
+        if (self.hash === hash)
+            return self
+        // если predecessor === null && self.hash < hash
+        // то нельзя точно определить владение текущим узлом
+    }
+    if (isResponsible(self.hash, successor.hash, hash)) {
+        return successor
+    }
+    return undefined
 }

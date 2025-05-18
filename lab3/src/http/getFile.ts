@@ -6,13 +6,13 @@ import {
     decodeFileKey,
     resolveBlockPath
 } from "../models/file.js";
-import {makeNodeFinder, Node} from "../models/node.js";
 import {pipeline} from "node:stream/promises";
 import {acceptRanges, Range, RangeError, rangeParser} from "./range-parser.js";
 import {readBlock} from "./getBlock.js";
 import {BlockNotFoundError} from "./BlockNotFoundError.js";
 import {agent} from "./agent.js";
-import {AppConfig} from "./app.js";
+import {AppConfig, AppState} from "../app.js";
+import {getSuccessor} from "./chord/getSuccessor.js";
 
 type BlockRangeStreamInfo = {
     blockStart: number
@@ -36,7 +36,7 @@ function getRangeInfo(byteRange: Range, blockSizeBytes: number): BlockRangeStrea
     }
 }
 
-export async function getFile(request: IncomingMessage, response: ServerResponse, fileKey: string, method: "GET" | "HEAD", config: AppConfig) {
+export async function getFile(request: IncomingMessage, response: ServerResponse<Request>, fileKey: string, method: "GET" | "HEAD", config: AppConfig, state: AppState) {
     const file = decodeFileKey(fileKey)
     const {mimeType, size, blockSize} = file
 
@@ -70,22 +70,24 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
     if (method === "HEAD")
         return response.end()
 
-    const nodeFinder = makeNodeFinder(config.nodes)
 
     return await pipeline(
         async function* () {
             for (let i = blockRange.blockStart; i < blockRange.blockEnd + 1; ++i) {
                 const bHash = computeBlockHash({file, idx: i})
-                const node = nodeFinder(bHash)
+                const nodeUrl = await getSuccessor(bHash, config, state)
+                if (nodeUrl === undefined) {
+                    throw new BlockNotFoundError(config.selfNode.url, i, bHash)
+                }
 
                 const skip = i === blockRange.blockStart && blockRange.skip > 0 ? blockRange.skip : undefined
                 const take = i === blockRange.blockEnd && blockRange.take > 0 ? blockRange.take : undefined
 
-                const selfRead = node === config.selfNode
-                if(selfRead) {
+                const selfRead = nodeUrl === config.selfNode.url
+                if (selfRead) {
                     yield* readBlock(config, resolveBlockPath(config.blockPath, bHash), skip, take)
                 } else {
-                    yield* await readRemoteBlock(bHash, node, i, skip, take)
+                    yield* await readRemoteBlock(bHash, nodeUrl, i, skip, take)
                 }
             }
         },
@@ -94,21 +96,20 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
 }
 
 
-
 function makeRangeHeader(take?: number, skip?: number) {
     if (take === undefined && skip === undefined)
         return undefined
-    if(take === undefined)
+    if (take === undefined)
         return `bytes=${skip}-`
-    if(skip === undefined)
+    if (skip === undefined)
         return `bytes=0-${take}` // отличается лишь одним байтом от `-${take}`
     return `bytes=${skip}-${take}`
 }
 
-async function readRemoteBlock(bHash: string, node: Node, i: number, skip?: number, take?: number) {
+async function readRemoteBlock(bHash: bigint, nodeUrl: string, i: number, skip?: number, take?: number) {
     // @ts-ignore
     const {promise: downstreamResponsePromise, resolve, reject} = Promise.withResolvers()
-    const url = new URL("/block/" + bHash, node.url)
+    const url = new URL("/block/" + bHash, nodeUrl)
     const range = makeRangeHeader(take, skip);
 
     http.request(url, {
@@ -123,6 +124,6 @@ async function readRemoteBlock(bHash: string, node: Node, i: number, skip?: numb
         .end()
     const downstreamResponse: IncomingMessage = await downstreamResponsePromise
     if (downstreamResponse.statusCode === 404)
-        throw new BlockNotFoundError(node.url, i, bHash)
+        throw new BlockNotFoundError(nodeUrl, i, bHash)
     return downstreamResponse
 }
