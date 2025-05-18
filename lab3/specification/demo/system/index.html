@@ -29,7 +29,9 @@
 
         useEffect(() => {
             (async () => {
-                const nodes = await fetch('http://localhost:53301/tour-du-monde').then(r => r.json())
+                const url = 'http://host.docker.internal:3000/tour-du-monde';
+                // const url = 'http://localhost:53301/tour-du-monde';
+                const nodes = await fetch(url).then(r => r.json())
                 const links = []
                 for(const n of nodes) {
                     const succ = await fetch(n + '/successor').then(r => r.text())

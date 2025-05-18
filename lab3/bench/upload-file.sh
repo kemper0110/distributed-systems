@@ -1,1 +1,1 @@
-curl -s -w "@curl-format.txt" -X POST -H "Content-Type: video/mp4" --data-binary @../videos/avatar.mp4 http://localhost:3001/file/"${FILE_NAME:-avatar.mp4}?blockSize=32"
+curl -s -w "@curl-format.txt" -X POST -H "Content-Type: video/mp4" --data-binary @../videos/avatar.mp4 http://host.docker.internal:3000/file/"${FILE_NAME:-avatar.mp4}?blockSize=32"

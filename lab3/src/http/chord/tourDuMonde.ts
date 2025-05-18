@@ -18,7 +18,7 @@ export async function tourDuMonde(request: IncomingMessage, response: ServerResp
 
     if (balanceHeaderValue < 1)
         return response
-            .writeHead(206, {...CorsHeaders, 'content-type': 'application/json'})
+            .writeHead(402, {...CorsHeaders, 'content-type': 'application/json'})
             .end(JSON.stringify([config.selfNode.url]))
 
     const nodes = await downstreamTourDuMonde(

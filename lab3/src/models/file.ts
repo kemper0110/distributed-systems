@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import * as path from "node:path";
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 export type File = {
     name: string
