@@ -87,10 +87,10 @@ async function asyncHandler(config: AppConfig, request: IncomingMessage, respons
             switch (request.method) {
                 case 'GET':
                 case 'HEAD': {
-                    return await getBlock(request, response, blockName, request.method, config)
+                    return await getBlock(request, response, BigInt(blockName), request.method, config)
                 }
                 case 'POST': {
-                    return await postBlock(request, response, blockName, config)
+                    return await postBlock(request, response, BigInt(blockName), config)
                 }
                 case 'OPTIONS': {
                     return response.writeHead(200, {'allow': 'GET, HEAD, POST, OPTIONS'}).end()

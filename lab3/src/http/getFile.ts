@@ -36,7 +36,7 @@ function getRangeInfo(byteRange: Range, blockSizeBytes: number): BlockRangeStrea
     }
 }
 
-export async function getFile(request: IncomingMessage, response: ServerResponse<Request>, fileKey: string, method: "GET" | "HEAD", config: AppConfig, state: AppState) {
+export async function getFile(request: IncomingMessage, response: ServerResponse, fileKey: string, method: "GET" | "HEAD", config: AppConfig, state: AppState) {
     const file = decodeFileKey(fileKey)
     const {mimeType, size, blockSize} = file
 
@@ -75,7 +75,9 @@ export async function getFile(request: IncomingMessage, response: ServerResponse
         async function* () {
             for (let i = blockRange.blockStart; i < blockRange.blockEnd + 1; ++i) {
                 const bHash = computeBlockHash({file, idx: i})
+                // console.log('Хеш блока', i, bHash)
                 const nodeUrl = await getSuccessor(bHash, config, state)
+                // console.log('Узел блока', i, nodeUrl)
                 if (nodeUrl === undefined) {
                     throw new BlockNotFoundError(config.selfNode.url, i, bHash)
                 }

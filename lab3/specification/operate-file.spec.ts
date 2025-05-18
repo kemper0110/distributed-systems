@@ -56,9 +56,16 @@ test('post file + read file', {
     const fileKey = await postResponse.text()
     expect(postResponse.status).toBe(200)
 
-    const getResponse = await fetch(`${pioneerNode.url}/file/${fileKey}`)
-    expect(getResponse.status).toBe(200)
-    expect(await getResponse.arrayBuffer()).toEqual(file1.buffer)
+    {
+        const getResponse = await fetch(`${pioneerNode.url}/file/${fileKey}`)
+        expect(getResponse.status).toBe(200)
+        expect(await getResponse.arrayBuffer()).toEqual(file1.buffer)
+    }
+    {
+        const getResponse = await fetch(`${followerNode.url}/file/${fileKey}`)
+        expect(getResponse.status).toBe(200)
+        expect(await getResponse.arrayBuffer()).toEqual(file1.buffer)
+    }
 
     fs.rmSync(pioneerBlockPaths, {recursive: true})
     fs.rmSync(followerBlockPaths, {recursive: true})

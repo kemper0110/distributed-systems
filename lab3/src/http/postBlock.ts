@@ -5,7 +5,7 @@ import fs from "fs";
 import {resolveBlockPath} from "../models/file.js";
 import {AppConfig} from "../app.js";
 
-export async function postBlock(request: IncomingMessage, response: ServerResponse, blockName: string, config: AppConfig) {
+export async function postBlock(request: IncomingMessage, response: ServerResponse, blockName: bigint, config: AppConfig) {
     const filePath = resolveBlockPath(config.blockPath, blockName)
     const stats = await fsp.stat(filePath).catch<Error>(e => e);
     if (!(stats instanceof Error))

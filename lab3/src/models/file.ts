@@ -20,7 +20,7 @@ export function decodeFileKey(key: string): File {
 }
 
 export function resolveBlockPath(blockPath: string, blockHash: bigint): string {
-    return path.join(blockPath, blockHash.toString(16))
+    return path.join(blockPath, blockHash.toString())
 }
 
 export function calculateBlockCount(fileSize: number, blockSize: number): number {

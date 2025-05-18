@@ -6,7 +6,7 @@ import {resolveBlockPath} from "../models/file.js";
 import {acceptRanges, RangeError, rangeParser} from "./range-parser.js";
 import {AppConfig} from "../app.js";
 
-export async function getBlock(request: IncomingMessage, response: ServerResponse, blockName: string, method: "GET" | "HEAD", config: AppConfig) {
+export async function getBlock(request: IncomingMessage, response: ServerResponse, blockName: bigint, method: "GET" | "HEAD", config: AppConfig) {
     const filePath = resolveBlockPath(config.blockPath, blockName)
     const stats = await fsp.stat(filePath).catch<Error>(e => e);
     if (stats instanceof Error) {
