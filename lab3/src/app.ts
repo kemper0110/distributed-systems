@@ -1,6 +1,5 @@
 import * as http from "node:http";
 import {IncomingMessage, ServerResponse} from "node:http";
-import {AddressInfo} from "node:net";
 import {getBlock} from "./http/getBlock.js";
 import {getFile} from "./http/getFile.js";
 import {postFile} from "./http/postFile.js";
@@ -162,18 +161,14 @@ export async function createApp(config: AppConfig) {
             })
     })
 
-    await new Promise<AddressInfo>((resolve, reject) => {
-        console.log(config.selfNode.url, 'starting')
+    await new Promise<void>((resolve, reject) => {
+        console.log(config.selfNode.url, 'Starting server')
         server.once('error', e => {
             reject(new Error('Cannot start server ' + config.selfNode.url, {
                 cause: e
             }))
         })
-        server.on('listening', () => {
-            const address = server.address() as AddressInfo
-            config.port = address.port
-            resolve(address);
-        })
+        server.on('listening', () => resolve())
         try {
             server.listen(config.port)
         } catch (e) {

@@ -104,6 +104,7 @@ test('10 nodes bootstrap test', {
     const followerApps = [] as App[];
         await using disposableAppGroup = {
             async [Symbol.asyncDispose]() {
+                // @ts-ignore
                 const promises = followerApps.map(app => app[Symbol.asyncDispose]())
                 for (const item of promises) {
                     // @ts-ignore

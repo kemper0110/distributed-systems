@@ -2,9 +2,13 @@
 
 1. Модели предметной области: поля, операции, отношения, ограничения
 2. Спецификация
-3. Графики распределения хешей блоков и узлов
-4. operate-block, operate-file
-5. Роуты
+   1. node, file
+   2. bootstrap
+   3. operate-block, operate-file
+3. app, stabilize, chord
+4. Роуты
+   1. streaming/*
+5. getBlock, range block, pipeline ReadStream
 6. HighWaterMark, backpressure, zero-window
 7. Обязательный Content-Length
 8. agent keep-alive
