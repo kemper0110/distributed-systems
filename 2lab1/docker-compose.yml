@@ -1,0 +1,54 @@
+services:
+  cassandra-seed:
+    image: cassandra:4.1
+    container_name: cassandra-seed
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_CLUSTER_NAME=TestCluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_RACK=rack1
+    volumes:
+      - ./cassandra_data_seed:/var/lib/cassandra
+
+  cassandra-node1:
+    image: cassandra:4.1
+    container_name: cassandra-node1
+    ports:
+      - "9043:9042"
+    depends_on:
+      - cassandra-seed
+    environment:
+      - CASSANDRA_SEEDS=cassandra-seed
+      - CASSANDRA_CLUSTER_NAME=TestCluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_RACK=rack1
+    volumes:
+      - ./cassandra_data_node1:/var/lib/cassandra
+
+  cassandra-node2:
+    image: cassandra:4.1
+    container_name: cassandra-node2
+    ports:
+      - "9044:9042"
+    depends_on:
+      - cassandra-seed
+    environment:
+      - CASSANDRA_SEEDS=cassandra-seed
+      - CASSANDRA_CLUSTER_NAME=TestCluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_RACK=rack1
+    volumes:
+      - ./cassandra_data_node2:/var/lib/cassandra
+
+#  client:
+#    image: node:24-alpine
+#    working_dir: /usr/app
+#    volumes:
+#      - type: bind
+#        source: .
+#        target: /usr/app
+#        read_only: true
+#    command: [ 'npm', 'start' ]
+#    mem_limit: 512M
+#    cpus: 2.0
